@@ -1,6 +1,6 @@
 ### The flespi-parameter-grafana-datasource works with grafana 10+
 
-![Logo](https://github.com/flespi-software/flespi-parameters-grafana-datasource/blob/master/src/img/logo-flespi-plugin-small.png?raw=true "flespi parameters grafana plugin")
+![Logo](https://github.com/flespi-software/flespi-parameters-grafana-datasource/blob/main/src/img/logo-flespi-plugin-small.png "flespi parameters grafana plugin")
 
 Plugin allows to visualize parameters of [flespi devices](https://flespi.io/docs/#/gw/!/devices).
 
