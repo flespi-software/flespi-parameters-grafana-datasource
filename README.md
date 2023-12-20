@@ -14,7 +14,8 @@ GF_DEFAULT_APP_MODE=development
 
 To install this plugin using the [grafana cli](https://grafana.com/docs/grafana/latest/cli/) tool, execute the following command:
 ```
-grafana cli --pluginUrl https://github.com/flespi-software/flespi-parameters-grafana-datasource/archive/master.zip plugins install flespi-parameters-datasource
+cd /usr/share/grafana/bin
+sudo ./grafana cli --pluginUrl https://github.com/flespi-software/flespi-parameters-grafana-datasource/archive/master.zip plugins install flespi-parameters-datasource
 ```
 and then restart your grafana server.
 
