@@ -31,7 +31,8 @@ sudo ./grafana cli plugins remove flespi-parameters-datasource
 
 ### To setup the datasource you need to configure your [Flespi Token](https://flespi.com/kb/tokens-access-keys-to-flespi-platform) in datasource's settings.
 
-### Plugin supports template variables. The following queries can be used to create variable:
+### Plugin supports template variables. 
+The following queries can be used to create variable:
 
 | Query                              | Description                                             |
 | ---------------------------------- |:-------------------------------------------------------:|
