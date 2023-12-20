@@ -12,8 +12,8 @@
     },
     "keywords": ["datasource", "flespi"],
     "logos": {
-      "small": "img/logo-flespi-plugin-small.png",
-      "large": "img/logo-flespi-plugin.png"
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
     },
     "links": [],
     "screenshots": [],
