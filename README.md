@@ -1,4 +1,4 @@
-### The flespi-parameter-grafana-datasource works with grafana 10+
+### The _flespi-parameter-grafana-datasource_ plugin works with grafana 10+
 
 ![Logo](https://github.com/flespi-software/flespi-parameters-grafana-datasource/blob/main/src/img/logo.svg "flespi parameters grafana plugin")
 
