@@ -6,7 +6,7 @@ Plugin allows to visualize parameters of [flespi devices](https://flespi.io/docs
 
 ## Installation
 
-As soon as _flespi-parameters-datasource_ plugin is not signed, in order to be able to install and run the plugin, you should sprcify plugin's id in [allow_loading_unsigned_plugins](https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#allow_loading_unsigned_plugins) Grafana configuration variable:
+As soon as _flespi-parameters-datasource_ plugin is not signed, in order to be able to install and run the plugin, you should specify plugin's id in [allow_loading_unsigned_plugins](https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#allow_loading_unsigned_plugins) Grafana configuration variable:
 
 ```
 allow_loading_unsigned_plugins = flespi-parameters-datasource
@@ -25,20 +25,21 @@ To check plugins directory in Grafana interface open: Toggle menu in top left co
 
 To remove plugin run:
 ```
-grafana cli plugins remove flespi-parameters-datasource
+cd /usr/share/grafana/bin
+sudo ./grafana cli plugins remove flespi-parameters-datasource
 ```
 
-### To setup the datasource you need to configure your [Flespi Token](https://flespi.com/kb/tokens-access-keys-to-flespi-platform) in datasource's settings.
+## To setup the datasource you need to configure your [Flespi Token](https://flespi.com/kb/tokens-access-keys-to-flespi-platform) in datasource's settings.
 
-Plugin supports template variables. The following queries can be used to create variable:
+## Plugin supports template variables. The following queries can be used to create variable:
 
 | Query                              | Description                                             |
 | ---------------------------------- |:-------------------------------------------------------:|
 | devices.*                          | fetch all devices available for given token             |
-| devices.${device}.parameters.*     | fetch numeric parameters of the selected device         |
+| devices.${device}.parameters.*     | fetch numeric parameters for the selected device        |
 
 
-### Dev setup
+## Dev setup
 
 To install frontend dependencies run:
 
@@ -48,7 +49,7 @@ To build and watch the plugin frontend code:
 
 `npm run dev`
 
-### Changelog
+## Changelog
 
 1.0.0
   Initial implementation
