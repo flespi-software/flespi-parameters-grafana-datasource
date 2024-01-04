@@ -178,21 +178,11 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     if ( telemetry === null ) {
       return Promise.resolve([]);
     }
-    const devices_telemetry_params = [];
+    const devicesTelemetryParams = [];
     for ( const param in telemetry ) {
-      if ( param.endsWith('.id') || 
-           param.endsWith('.enum') || 
-           param.endsWith('timestamp') ) {
-        // exclude *.id, *.enum  and *.timestamp parameters
-        continue;
-      }
-      if ( typeof telemetry[param].value !== "number" ) {
-        // include only those parameters that have number value
-        continue;
-      }
-      devices_telemetry_params.push(param);
+      devicesTelemetryParams.push(param);
     }
-    return devices_telemetry_params;
+    return devicesTelemetryParams;
   }
 
   // datasource's health check
