@@ -138,16 +138,16 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       refId: refId,
       fields: [
         { name: 'time', type: FieldType.time },
-        { name: 'speed', type: FieldType.number },
+        { name: param, type: FieldType.number },
       ],
     })
 
     const messages = response.data.result;
-    const messages_count = messages.length;
-    for (let i = 0; i < messages_count; i++) {
+    const messageCount = messages.length;
+    for (let i = 0; i < messageCount; i++) {
       const message = messages[i];
       if (message[param] !== undefined) {
-        frame.add({ time: message["timestamp"] * 1000, speed: message[param] });
+        frame.add({ time: message["timestamp"] * 1000, [param]: message[param] });
       }
     }
     return { data: [frame] };
