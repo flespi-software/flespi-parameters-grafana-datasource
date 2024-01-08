@@ -1,7 +1,7 @@
 import { DataQuery, DataSourceJsonData } from '@grafana/data';
 
 export interface MyQuery extends DataQuery {
-  entity: string;
+  entity: number | string; // id of the entity (number) or corresponding variable (string)
   param: string;
   func: string;
 }
