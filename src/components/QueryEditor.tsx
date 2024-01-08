@@ -81,9 +81,17 @@ export class QueryEditor extends PureComponent<Props, State> {
 
   // handle changes in selected device
   onDeviceChange = (option: any) => {
+    let deviceSelected;
+    if (option.__isNew__ === true) {
+      // this is custom drop-down value - this is expected to be variable name, store it in the state as string
+      deviceSelected = option.value;
+    } else {
+      // this is a value chosen from drop-down's options - this is device id, store it in the state as number
+      deviceSelected = parseInt(option.value, 10);
+    }
     const { onChange, onRunQuery, query } = this.props;
     // save Id of the selected entity (device) into query, and invalidate the choise of selected param
-    onChange({ ...query, entity: option.value, param: '' });
+    onChange({ ...query, entity: deviceSelected, param: '' });
     // save selected device in the compoment state
     this.setState({ ...this.state, deviceSelected: option });
     // execute the query to cleanup the graph drawn for previously selected device&param

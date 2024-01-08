@@ -76,6 +76,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     const observableResponses: Array<Observable<DataQueryResponse>> = options.targets.map((query) => {
 
+      console.log("========= query(): query");
+      console.log(JSON.stringify(query));
+
       const routePath = '/flespi';
       // resolve device from variable (that is chosen in the select in the top left corner)
       let deviceId = query.entity;
