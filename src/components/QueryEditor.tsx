@@ -93,7 +93,7 @@ export class QueryEditor extends PureComponent<Props, State> {
     // save Id of the selected entity (device) into query, and invalidate the choise of selected param
     onChange({ ...query, entity: deviceSelected, entityLabel: option.label, param: '' });
     // save selected device in the compoment state
-    this.setState({ ...this.state, deviceSelected: option });
+    this.setState({ ...this.state, deviceSelected: option, paramSelected: { label: 'Select parameter', value: '' }});
     // execute the query to cleanup the graph drawn for previously selected device&param
     onRunQuery();
   };
