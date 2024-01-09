@@ -91,7 +91,7 @@ export class QueryEditor extends PureComponent<Props, State> {
     }
     const { onChange, onRunQuery, query } = this.props;
     // save Id of the selected entity (device) into query, and invalidate the choise of selected param
-    onChange({ ...query, entity: deviceSelected, param: '' });
+    onChange({ ...query, entity: deviceSelected, entityLabel: option.label, param: '' });
     // save selected device in the compoment state
     this.setState({ ...this.state, deviceSelected: option });
     // execute the query to cleanup the graph drawn for previously selected device&param
@@ -194,7 +194,7 @@ export class QueryEditor extends PureComponent<Props, State> {
                         allowCustomValue={true}
                         />
                     </InlineField>
-                    <InlineField label="Generalization func" labelWidth={26}>
+                    <InlineField label="Generalization function" labelWidth={26}>
                         <Select
                         options={GEN_FUNC_OPTIONS}
                         value={funcSelected}
