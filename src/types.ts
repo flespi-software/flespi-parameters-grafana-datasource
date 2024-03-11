@@ -1,10 +1,24 @@
-import { DataQuery, DataSourceJsonData } from '@grafana/data';
+import { DataSourceJsonData, SelectableValue } from '@grafana/data';
+import { DataQuery } from '@grafana/schema';
 
 export interface MyQuery extends DataQuery {
-  entity: number | string;    // if number - id of the entity to draw the graph for, if string - name of the variable to resolve the entity id from
-  entityLabel: string;        // label of the entity in drop down, used to create labels of the legend if there are more that one entity on one grrph
-  param: string;              // param to be drawn on the graph
-  func: string;               // generalization function
+    // oldquery model
+    entity: number | string;    // if number - id of the entity to draw the graph for, if string - name of the variable to resolve the entity id from
+    entityLabel: string;        // label of the entity in drop down, used to create labels of the legend if there are more that one entity on one grrph
+    param: string;              // param to be drawn on the graph
+    func: string;               // generalization function
+
+    // new query model
+    queryType: string;                                  // type of the query: devices, containers, logs, statistics, intervals    
+    // -                                                // the following fields are used if queryType === 'devices'
+    useDeviceVariable: boolean;
+    devicesSelected: Array<SelectableValue<number>>;    // used if useDeviceVariable === false
+    deviceVariable: string;                             // used if useDeviceVariable === true
+    useParameterVariable: boolean;
+    parametersSelected: string[];
+    parameterVariable: string;
+    // if queryType === 'statistics'
+    accountSelector: string;
 }
 
 /**

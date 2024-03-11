@@ -15,10 +15,10 @@ import { map } from 'rxjs/operators';
 
 // interfaces are used in metricFindQuery function
 // for 'devices.*' query - that is resolved into request /gw/devices/all
-interface FlespiDevicesResponse {
-  result: FlespiDevice[],
+interface FlespiEntytiesResponse {
+  result: FlespiEntity[],
 }
-interface FlespiDevice {
+interface FlespiEntity {
   id: number,
   name: string,
 }
@@ -30,6 +30,18 @@ interface FlespiDeviceTelemetry {
   id: number,
   telemetry: any,
 }
+
+// default query values
+export const defaultQuery: Partial<MyQuery> = {
+  queryType: 'devices',
+  // query for device message parameters
+  useDeviceVariable: false,
+  devicesSelected: [],
+  deviceVariable: '',
+  useParameterVariable: false,
+  parametersSelected: [],
+  parameterVariable: '',
+};
 
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   url?: string;
@@ -72,55 +84,73 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   }
 
   // This function is called when you edit query or choose device in variable's selector
-  query(options: DataQueryRequest<MyQuery>): Observable<DataQueryResponse> {
+    query(options: DataQueryRequest<MyQuery>): Observable<DataQueryResponse> {
 
-    const observableResponses: Array<Observable<DataQueryResponse>> = options.targets.map((query) => {
+        const observableResponses: Array<Observable<DataQueryResponse>> = options.targets.map((query) => {
 
-      console.log("========== query()");
-      console.log(JSON.stringify(query));
+            console.log("========== query()");
+            console.log(JSON.stringify(query));
+            const routePath = '/flespi';
 
-      const routePath = '/flespi';
-      // prepare id of the entity
-      let { entity, entityLabel } = query;
-      if (entity === undefined || entity === '') {
-        // device not yet selected
-        throw new Error("Select device to draw a graph for");
-      }
-      // if entity contains a string - this is expected to be name of dashboard variable to resolve entity id from
-      if (typeof entity === 'string' && getTemplateSrv().containsTemplate(entity) === true) {
-        // this is dashboard variable, resolve it to entity Id
-        entity = parseInt(getTemplateSrv().replace(entity, options.scopedVars, "csv"), 10);
-        // if there are several devices on one graph - find current selected variable to use it label on legend
-        if (options.targets.length > 1) {
-          const currentVariable = getTemplateSrv().getVariables().find(variable => {
-            return (`$${variable.name}` === query.entity);
-          });
-          // JSON stringify and back is needed because of type checking, that doesn't see variable.current field in TypedVariableModel type
-          entityLabel = JSON.parse(JSON.stringify(currentVariable)).current.text;
-        }
-      }
-      // entity should be resolved to number (id)
-      if (typeof entity !== 'number') {
-        throw new Error(`Wrong device ${entity}`);
-      }
-  
-      // prepare param to be drawn on the graph
-      const param = getTemplateSrv().replace(query.param, options.scopedVars);
+            // if (query.queryType === 'devices') {
+                const deviceObservableResponses = query.devicesSelected.map((device => {
+                    // now fetch messages for the selected device and full data frame with values of the param
+                        const requestParams = this.prepareDeviceMessagesRequestParams(options, query);
+                        const observable = getBackendSrv().fetch<DataQueryResponse> ({        
+                        url: this.url + routePath + `/gw/devices/${device.value}/messages?data=${requestParams}`,
+                        method: 'GET',
+                    }).pipe(
+                        map((response) => this.handleDeviceMessagesResponse(response, query.refId + ':' + device.value, 'position.speed', device.label))
+                    )
 
-      // now fetch messages for the selected device and full data frame with values of the param
-      const requestParams = this.prepareDeviceMessagesRequestParams(options, query);
-      const observable = getBackendSrv().fetch<DataQueryResponse> ({        
-        url: this.url + routePath + `/gw/devices/${entity}/messages?data=${requestParams}`,
-        method: 'GET',
-      }).pipe(
-        map((response) => this.handleDeviceMessagesResponse(response, query.refId, param, (options.targets.length > 1) ? entityLabel : undefined))
-      )
+                    return observable;
+                }));
+            return merge(...deviceObservableResponses); 
+            // }
 
-      return observable;
-    });
 
-    return merge(...observableResponses);
-  }
+            // const routePath = '/flespi';
+            // // prepare id of the entity
+            // let { entity, entityLabel } = query;
+            // if (entity === undefined || entity === '') {
+            //   // device not yet selected
+            //   throw new Error("Select device to draw a graph for");
+            // }
+            // // if entity contains a string - this is expected to be name of dashboard variable to resolve entity id from
+            // if (typeof entity === 'string' && getTemplateSrv().containsTemplate(entity) === true) {
+            //   // this is dashboard variable, resolve it to entity Id
+            //   entity = parseInt(getTemplateSrv().replace(entity, options.scopedVars, "csv"), 10);
+            //   // if there are several devices on one graph - find current selected variable to use it label on legend
+            //   if (options.targets.length > 1) {
+            //     const currentVariable = getTemplateSrv().getVariables().find(variable => {
+            //       return (`$${variable.name}` === query.entity);
+            //     });
+            //     // JSON stringify and back is needed because of type checking, that doesn't see variable.current field in TypedVariableModel type
+            //     entityLabel = JSON.parse(JSON.stringify(currentVariable)).current.text;
+            //   }
+            // }
+            // // entity should be resolved to number (id)
+            // if (typeof entity !== 'number') {
+            //   throw new Error(`Wrong device ${entity}`);
+            // }
+
+            // // prepare param to be drawn on the graph
+            // const param = getTemplateSrv().replace(query.param, options.scopedVars);
+
+            // // now fetch messages for the selected device and full data frame with values of the param
+            // const requestParams = this.prepareDeviceMessagesRequestParams(options, query);
+            // const observable = getBackendSrv().fetch<DataQueryResponse> ({        
+            //   url: this.url + routePath + `/gw/devices/${entity}/messages?data=${requestParams}`,
+            //   method: 'GET',
+            // }).pipe(
+            //   map((response) => this.handleDeviceMessagesResponse(response, query.refId, param, (options.targets.length > 1) ? entityLabel : undefined))
+            // )
+
+            // return observable;
+        });
+
+        return merge(...observableResponses);
+    }
 
   // prepare params for GET devices/DEVICE_ID/messages request
   // returns the string applicable to use as '?data=' URL parameter
@@ -172,10 +202,32 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   }
 
   // fetch all flespi devices available for the configured token
-  async fetchAllFlespiDevices(): Promise<FlespiDevice[]> {
+  async fetchAllFlespiDevices(): Promise<FlespiEntity[]> {
     const routePath = '/flespi';
-    const observableResponse = getBackendSrv().fetch<FlespiDevicesResponse>({
+    const observableResponse = getBackendSrv().fetch<FlespiEntytiesResponse>({
       url: this.url + routePath + '/gw/devices/all',
+      method: 'GET',
+    });
+  
+    const response = await lastValueFrom(observableResponse);
+    return response.data.result;
+  }
+
+  async fetchAllFlespiSubaccounts(): Promise<FlespiEntity[]> {
+    const routePath = '/flespi';
+    const observableResponse = getBackendSrv().fetch<FlespiEntytiesResponse>({
+      url: this.url + routePath + '/platform/subaccounts/all?fields=id%2Cname',
+      method: 'GET',
+    });
+  
+    const response = await lastValueFrom(observableResponse);
+    return response.data.result;
+  }
+
+  async fetchFlespiAccount(): Promise<FlespiEntity[]> {
+    const routePath = '/flespi';
+    const observableResponse = getBackendSrv().fetch<FlespiEntytiesResponse>({
+      url: this.url + routePath + '/platform/customer?fields=id%2Cname',
       method: 'GET',
     });
   
@@ -195,11 +247,11 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     if ( telemetry === null ) {
       return Promise.resolve([]);
     }
-    const devicesTelemetryParams = [];
-    for ( const param in telemetry ) {
-      devicesTelemetryParams.push(param);
+    const devicesTelemetryParameters = [];
+    for ( const parameter in telemetry ) {
+        devicesTelemetryParameters.push(parameter);
     }
-    return devicesTelemetryParams;
+    return devicesTelemetryParameters;
   }
 
   // datasource's health check
