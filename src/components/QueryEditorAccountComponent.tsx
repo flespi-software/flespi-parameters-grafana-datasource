@@ -1,6 +1,7 @@
 import { QueryEditorProps, SelectableValue } from "@grafana/data";
 import { InlineField, InlineLabel, Select } from "@grafana/ui";
 import { DataSource } from "datasource";
+import { FlespiSDK } from "flespi-sdk";
 import React, { ReactElement, useEffect, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
 
@@ -13,8 +14,8 @@ export function Account(props: QueryEditorProps<DataSource, MyQuery, MyDataSourc
         // load devices and store them into state for the later use in devices drop-down
         const fetchAccounts = async () => {
           const accounts = await Promise.all([
-              datasource.fetchFlespiAccount(),
-              datasource.fetchAllFlespiSubaccounts()
+              FlespiSDK.fetchFlespiAccount(datasource.url),
+              FlespiSDK.fetchAllFlespiSubaccounts(datasource.url)
           ]);
           const values = (await Promise.all(accounts))
             .flat()

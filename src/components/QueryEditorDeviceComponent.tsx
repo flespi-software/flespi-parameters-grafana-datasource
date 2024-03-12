@@ -2,6 +2,7 @@ import { QueryEditorProps, SelectableValue } from "@grafana/data";
 import { getTemplateSrv } from "@grafana/runtime";
 import { InlineField, InlineLabel, Input, MultiSelect, Switch } from "@grafana/ui";
 import { DataSource } from "datasource";
+import { FlespiSDK } from "flespi-sdk";
 import React, { ReactElement, useEffect, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
 
@@ -20,7 +21,7 @@ export function Device(props: QueryEditorProps<DataSource, MyQuery, MyDataSource
     useEffect(() => {
         // load devices and store them into state for the later use in devices drop-down
         const fetchDevices = async () => {
-          const values = (await datasource.fetchAllFlespiDevices()).map(device => {
+          const values = (await FlespiSDK.fetchAllFlespiDevices(datasource.url)).map(device => {
             return {
               label: device.name,
               value: device.id,

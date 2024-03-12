@@ -1,6 +1,7 @@
 import { QueryEditorProps, SelectableValue } from "@grafana/data";
 import { AsyncMultiSelect, InlineField, InlineLabel, Input, Switch } from "@grafana/ui";
 import { DataSource, defaultQuery } from "datasource";
+import { FlespiSDK } from "flespi-sdk";
 import { defaults } from "lodash";
 import React, { ReactElement, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
@@ -35,7 +36,7 @@ export function DeviceParameter(props: QueryEditorProps<DataSource, MyQuery, MyD
         }
         // fetch telemetry parameters for all selected devices
         const telemetries = await Promise.all(devicesSelected.map(device => {
-            return datasource.fetchDevicesTelemetryParameters(device.value ? device.value : 0).then((result: string[]) => {
+            return FlespiSDK.fetchDeviceTelemetryParameters(device.value ? device.value : 0, datasource.url).then((result: string[]) => {
                 return result
                 // filter parameters based on user input in Parameter select field
                 .filter((parameter: string) => parameter.toLowerCase().includes(inputValue));

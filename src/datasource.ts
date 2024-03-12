@@ -8,28 +8,11 @@ import {
   MetricFindValue,
 } from '@grafana/data';
 
-import { Observable, merge, lastValueFrom } from 'rxjs';
+import { Observable, merge } from 'rxjs';
 import { MyQuery, MyDataSourceOptions } from './types';
 import { FetchResponse, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { map } from 'rxjs/operators';
-
-// interfaces are used in metricFindQuery function
-// for 'devices.*' query - that is resolved into request /gw/devices/all
-interface FlespiEntytiesResponse {
-  result: FlespiEntity[],
-}
-interface FlespiEntity {
-  id: number,
-  name: string,
-}
-// for 'devices.$device.params.*' query - that is resolved into request'gw/devices/<device_id>/telemetry/all
-interface FlespiDeviceTelemetryResponse {
-  result: FlespiDeviceTelemetry[],
-}
-interface FlespiDeviceTelemetry {
-  id: number,
-  telemetry: any,
-}
+import { FlespiSDK } from 'flespi-sdk';
 
 // default query values
 export const defaultQuery: Partial<MyQuery> = {
@@ -44,12 +27,12 @@ export const defaultQuery: Partial<MyQuery> = {
 };
 
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
-  url?: string;
+  url: string;
 
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
     super(instanceSettings);
 
-    this.url = instanceSettings.url;
+    this.url = instanceSettings.url ? instanceSettings.url : '';
   }
 
   // This function is called when you hit 'Run query' button for dashboard variable with type query
@@ -65,7 +48,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     }
     if (variableQueryParsed[0] === 'devices.*') {
       // this is variable query 'devices.*' - return all flespi devices available for the token
-      return (await this.fetchAllFlespiDevices()).map(device => {
+      return (await FlespiSDK.fetchAllFlespiDevices(this.url)).map(device => {
         return {
           text: `#${device.id} - ${device.name.replace(/\./g,'_')}`,
           value: device.id,
@@ -75,7 +58,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       // this is variable query 'devices.#device_id - device_name.params.*'
       // device id is in the 3 array element of the parsed query
       const deviceId = variableQueryParsed[3];
-      const deviceTelemetryParams = await this.fetchDevicesTelemetryParameters(deviceId);
+      const deviceTelemetryParams = await FlespiSDK.fetchDeviceTelemetryParameters(parseInt(deviceId, 10), this.url);
       // transform returned arameters to the required format [{'text': 'param.1'}, {'text':'param.2'}]
       return deviceTelemetryParams.map((param) => { 
         return { text: param };
@@ -201,63 +184,10 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     return { data: [frame] };
   }
 
-  // fetch all flespi devices available for the configured token
-  async fetchAllFlespiDevices(): Promise<FlespiEntity[]> {
-    const routePath = '/flespi';
-    const observableResponse = getBackendSrv().fetch<FlespiEntytiesResponse>({
-      url: this.url + routePath + '/gw/devices/all',
-      method: 'GET',
-    });
-  
-    const response = await lastValueFrom(observableResponse);
-    return response.data.result;
-  }
-
-  async fetchAllFlespiSubaccounts(): Promise<FlespiEntity[]> {
-    const routePath = '/flespi';
-    const observableResponse = getBackendSrv().fetch<FlespiEntytiesResponse>({
-      url: this.url + routePath + '/platform/subaccounts/all?fields=id%2Cname',
-      method: 'GET',
-    });
-  
-    const response = await lastValueFrom(observableResponse);
-    return response.data.result;
-  }
-
-  async fetchFlespiAccount(): Promise<FlespiEntity[]> {
-    const routePath = '/flespi';
-    const observableResponse = getBackendSrv().fetch<FlespiEntytiesResponse>({
-      url: this.url + routePath + '/platform/customer?fields=id%2Cname',
-      method: 'GET',
-    });
-  
-    const response = await lastValueFrom(observableResponse);
-    return response.data.result;
-  }
-
-  // fetch telemetry parameters for the given device, excluding certain parameters
-  async fetchDevicesTelemetryParameters(deviceId: number | string): Promise<string[]> {
-    const routePath = '/flespi';
-    const observableResponse = getBackendSrv().fetch<FlespiDeviceTelemetryResponse>({
-      url: this.url + routePath + `/gw/devices/${deviceId}/telemetry/all`,
-      method: 'GET',
-    })
-    const response = await lastValueFrom(observableResponse);
-    const telemetry = response.data.result[0].telemetry;
-    if ( telemetry === null ) {
-      return Promise.resolve([]);
-    }
-    const devicesTelemetryParameters = [];
-    for ( const parameter in telemetry ) {
-        devicesTelemetryParameters.push(parameter);
-    }
-    return devicesTelemetryParameters;
-  }
-
   // datasource's health check
   async testDatasource() {
     // select all flespi devices available for the configured token
-    const flespiDevices = await this.fetchAllFlespiDevices();
+    const flespiDevices = await FlespiSDK.fetchAllFlespiDevices(this.url);
     return {
       status: 'success',
       message: `Success! Found ${flespiDevices.length} devices for the configured Flespi Token`,
