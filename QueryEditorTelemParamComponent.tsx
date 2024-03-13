@@ -7,15 +7,15 @@ import React, { ReactElement, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
 
 
-export function DeviceParameter(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
+export function TelemetryParameter(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource } = props;
     const query = defaults(props.query, defaultQuery);
 
-    const [ useParameterVariable, setUseParameterVariable ] = useState<boolean>(query.useParameterVariable);
-    const [ parameterVariable, setParameterVariable ] = useState<string>(query.parameterVariable);
-    const [ parametersSelected, setParametersSelected ] = useState<Array<SelectableValue<string>>>(() => {
-        if (query.parametersSelected) {
-            return query.parametersSelected.map((parameter) => {
+    const [ useTelemParamVariable, setUseTelemParamVariable ] = useState<boolean>(query.useTelemParamVariable);
+    const [ telemParamVariable, setTelemParamVariable ] = useState<string>(query.telemParamVariable);
+    const [ telemParamsSelected, setTelemParamsSelected ] = useState<Array<SelectableValue<string>>>(() => {
+        if (query.telemParamsSelected) {
+            return query.telemParamsSelected.map((parameter) => {
                 return {
                     label: parameter,
                     value: parameter,
@@ -27,8 +27,7 @@ export function DeviceParameter(props: QueryEditorProps<DataSource, MyQuery, MyD
     const devicesSelected = query.devicesSelected;
     const devices = devicesSelected.map((device: SelectableValue<number>) => device.value).join();
 
-    // load telemetry parameters for the device that is selected in Device drop down
-    // this.state.deviceSelected.value contains device Id  of the selected device
+    // load telemetry parameters for the devices selected in Devices drop down
     const loadFlespiDevicesParameters = async (inputValue: string) => {
         if (devicesSelected.toString() === '') {
             // device is not yet selected, return empty array of parameters
@@ -53,17 +52,17 @@ export function DeviceParameter(props: QueryEditorProps<DataSource, MyQuery, MyD
     // handle changes in selected parameter 
     const onChangeParametersSelect = (option: any) => {
         // update form state
-        setParametersSelected(option);
+        setTelemParamsSelected(option);
         // save new parameter to query
-        onChange({ ...query, parametersSelected: option.map((param: SelectableValue<string>) => { return param.value!; }) });
+        onChange({ ...query, telemParamsSelected: option.map((param: SelectableValue<string>) => { return param.value!; }) });
         // execute the query
         onRunQuery();
     };
 
     const onParameterInputChange = (event: any) => {
         // save updated container variable to query
-        setParameterVariable(event.target.value);
-        onChange({ ...query, parameterVariable: event.target.value });
+        setTelemParamVariable(event.target.value);
+        onChange({ ...query, telemParamVariable: event.target.value });
       }
     
       const onParameterInputKeyDown = (event: any) => {
@@ -81,29 +80,29 @@ export function DeviceParameter(props: QueryEditorProps<DataSource, MyQuery, MyD
     }
 
     /////////////////////////////////////////////////////////////////////////////////
-    // render controls to specify parameters of flespi device for query
+    // render controls to specify telemetry parameters of flespi device for query
     /////////////////////////////////////////////////////////////////////////////////
     return (
         <div  className="gf-form">
             <InlineLabel width={16} tooltip="Choose telemetry parameters for query">
-                Parameter
+                Parameters
             </InlineLabel>
             <InlineField label="Use dashboard variable">
                 <div className='gf-form-switch'>
                 <Switch
-                    value={!!useParameterVariable}
+                    value={!!useTelemParamVariable}
                     onChange={() => {
-                        setUseParameterVariable(!useParameterVariable);
-                        onChange({ ...query, useParameterVariable: !query.useParameterVariable });
+                        setUseTelemParamVariable(!useTelemParamVariable);
+                        onChange({ ...query, useTelemParamVariable: !query.useTelemParamVariable });
                     }}
                 />
                 </div>     
             </InlineField>
-        {!useParameterVariable ? (
+        {!useTelemParamVariable ? (
             <InlineField labelWidth={16}>
                 <AsyncMultiSelect
                     key={devices}
-                    value={parametersSelected}
+                    value={telemParamsSelected}
                     loadOptions={loadFlespiDevicesParameters}
                     defaultOptions
                     cacheOptions
@@ -116,7 +115,7 @@ export function DeviceParameter(props: QueryEditorProps<DataSource, MyQuery, MyD
             ) : (
             <Input
                 name="parameter"
-                value={parameterVariable}
+                value={telemParamVariable}
                 onChange={onParameterInputChange}
                 onKeyDown={onParameterInputKeyDown}
                 required

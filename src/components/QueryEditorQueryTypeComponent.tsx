@@ -1,5 +1,6 @@
 import { QueryEditorProps } from "@grafana/data";
 import { InlineField, RadioButtonGroup } from "@grafana/ui";
+import { QUERY_TYPE_OPTIONS } from "../constants";
 import { DataSource, defaultQuery } from "datasource";
 import { defaults } from "lodash";
 import React, { ReactElement, useState } from "react";
@@ -10,14 +11,7 @@ export function QueryType(props: QueryEditorProps<DataSource, MyQuery, MyDataSou
     const { onChange, query } = props;  
     const defaultedQuery = defaults(query, defaultQuery);
     const [ queryType, setQueryType ] = useState<string>(defaultedQuery.queryType);
-    const options = [
-        { label: 'Devices', value: 'devices' },
-        { label: 'Statistics', value: 'statistics' },
-        { label: 'Logs', value: 'logs' },
-        { label: 'Intervals', value: 'intervals' },
-        { label: 'Containers', value: 'containers' },
-      ];
-      
+
     const disabledOptions = ['logs', 'intervals', 'containers'];
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +31,7 @@ export function QueryType(props: QueryEditorProps<DataSource, MyQuery, MyDataSou
         <div className="gf-form">
           <InlineField label="Query Type" labelWidth={26}>
             <RadioButtonGroup 
-                options={options}
+                options={QUERY_TYPE_OPTIONS}
                 disabledOptions={disabledOptions}
                 value={queryType} 
                 onChange={onQueryTypeChange} />

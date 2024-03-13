@@ -2,7 +2,7 @@ import { DataSourceJsonData, SelectableValue } from '@grafana/data';
 import { DataQuery } from '@grafana/schema';
 
 export interface MyQuery extends DataQuery {
-    // oldquery model
+    // old query model
     entity: number | string;    // if number - id of the entity to draw the graph for, if string - name of the variable to resolve the entity id from
     entityLabel: string;        // label of the entity in drop down, used to create labels of the legend if there are more that one entity on one grrph
     param: string;              // param to be drawn on the graph
@@ -10,27 +10,34 @@ export interface MyQuery extends DataQuery {
 
     // new query model
     queryType: string;                                  // type of the query: devices, containers, logs, statistics, intervals    
-    // -                                                // the following fields are used if queryType === 'devices'
+    // - // the following fields are used if queryType === 'devices'
     useDeviceVariable: boolean;
     devicesSelected: Array<SelectableValue<number>>;    // used if useDeviceVariable === false
     deviceVariable: string;                             // used if useDeviceVariable === true
-    useParameterVariable: boolean;
-    parametersSelected: string[];
-    parameterVariable: string;
-    // if queryType === 'statistics'
-    accountSelector: string;
+    useTelemParamVariable: boolean;
+    telemParamsSelected: string[];
+    telemParamVariable: string;
+    // - // the following fields are used if queryType === 'statistics'
+    useAccountVariable: boolean;
+    accountsSelected: Array<SelectableValue<number>>;   // used if useAccountVariable === false
+    accountVariable: string;                            // used if useAccountVariable === true
+    useStatParamVariable: boolean;
+    statParamsSelected: string[]; 
+    statParamVariable: string;    
+    // - // used if queryType === 'devices' || queryType === 'statistics'
+    generalizationFunction?: string;                     
 }
 
 /**
  * These are options configured for each DataSource instance
  */
 export interface MyDataSourceOptions extends DataSourceJsonData {
-  path?: string;
+    path?: string;
 }
 
 /**
  * Value that is used in the backend, but never sent over HTTP to the frontend
  */
 export interface MySecureJsonData {
-  apiKey?: string;
+    apiKey?: string;
 }

@@ -1,7 +1,6 @@
 import { getBackendSrv } from "@grafana/runtime";
 import { lastValueFrom } from "rxjs";
 
-// for 'devices.$device.params.*' query - that is resolved into request'gw/devices/<device_id>/telemetry/all
 export interface FlespiDeviceTelemetryResponse {
     result: FlespiDeviceTelemetry[],
 }
@@ -9,6 +8,15 @@ export interface FlespiDeviceTelemetryResponse {
 export interface FlespiDeviceTelemetry {
     id: number,
     telemetry: any,
+}
+
+export interface FlespiCustomerStatisticsResponse {
+    result: FlespiCustomerStatistics[],
+}
+
+export interface FlespiCustomerStatistics {
+    cid: number,
+    [key: string]: any,
 }
 
 // interfaces are used in metricFindQuery function
@@ -42,7 +50,7 @@ export class FlespiSDK {
 
     // fetch telemetry parameters of the given device by Id
     // GET gw/devices/<device_id>/telemetry/all
-    // returns JS array of parameters' names
+    // returns JS array of telemetry parameters' names
     static async fetchDeviceTelemetryParameters(deviceId: number, url: string): Promise<string[]> {
         const observableResponse = getBackendSrv().fetch<FlespiDeviceTelemetryResponse>({
             url: url + this.routePath + `/gw/devices/${deviceId}/telemetry/all`,
@@ -87,5 +95,29 @@ export class FlespiSDK {
 
         const response = await lastValueFrom(observableResponse);
         return response.data.result;
+    }
+
+    // fetch possible statistics parameters for given account by Id
+    // GET platform/customer/statistics with header 'x-flespi-cid: <account_id>'
+    // returns JS array of statistics parameters' names
+    static async fetchFlespiStatisticsParametersForAccount(accountId: number, url: string): Promise<string[]> {
+        const observableResponse = getBackendSrv().fetch<FlespiCustomerStatisticsResponse>({
+            url: url + this.routePath + '/platform/customer/statistics?data=%7B%22reverse%22%3Atrue%2C%22count%22%3A1%7D',
+            method: 'GET',
+            headers: {
+                'x-flespi-cid': accountId,
+            },
+        });
+        const response = await lastValueFrom(observableResponse);
+        const statistics = response.data.result[0];
+        if ( statistics === null ) {
+            return Promise.resolve([]);
+        }
+        const statisticsParameters = [];
+        for ( const parameter in statistics ) {
+            statisticsParameters.push(parameter);
+        }
+
+        return statisticsParameters;
     }
 }

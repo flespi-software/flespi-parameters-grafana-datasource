@@ -104,8 +104,8 @@ export function Device(props: QueryEditorProps<DataSource, MyQuery, MyDataSource
     /////////////////////////////////////////////////////////////////////////////////
     return (
         <div className="gf-form">
-          <InlineLabel width={16} tooltip="Choose device for query">
-            Device
+          <InlineLabel width={16} tooltip="Choose devices for query">
+            Devices
           </InlineLabel>
           <InlineField label="Use dashboard variable">
             <div className='gf-form-switch'>

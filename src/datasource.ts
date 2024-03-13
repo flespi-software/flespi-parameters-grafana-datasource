@@ -21,9 +21,16 @@ export const defaultQuery: Partial<MyQuery> = {
   useDeviceVariable: false,
   devicesSelected: [],
   deviceVariable: '',
-  useParameterVariable: false,
-  parametersSelected: [],
-  parameterVariable: '',
+  useTelemParamVariable: false,
+  telemParamsSelected: ['position.speed'],
+  telemParamVariable: '',
+  useAccountVariable: false,
+  accountsSelected: [],
+  accountVariable: '',
+  useStatParamVariable: false,
+  statParamsSelected: ['*_storage'],
+  statParamVariable: '',   
+  generalizationFunction: "average",
 };
 
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
