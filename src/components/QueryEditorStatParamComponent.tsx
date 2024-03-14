@@ -1,5 +1,6 @@
 import { QueryEditorProps, SelectableValue } from "@grafana/data";
 import { AsyncMultiSelect, InlineField, InlineLabel, Input, Switch } from "@grafana/ui";
+import { QUERY_TYPE_STATISTICS } from "../constants";
 import { DataSource, defaultQuery } from "datasource";
 import { FlespiSDK } from "flespi-sdk";
 import { defaults } from "lodash";
@@ -72,9 +73,9 @@ export function StatisticsParameter(props: QueryEditorProps<DataSource, MyQuery,
       }
 
     /////////////////////////////////////////////////////////////////////////////////
-    // render these controls only for query type 'statistics'
+    // render these controls only for query type QUERY_TYPE_STATISTICS
     /////////////////////////////////////////////////////////////////////////////////
-    if (query.queryType !== 'statistics') {
+    if (query.queryType !== QUERY_TYPE_STATISTICS) {
         return <div/>;
     }
 

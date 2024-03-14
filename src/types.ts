@@ -10,21 +10,21 @@ export interface MyQuery extends DataQuery {
 
     // new query model
     queryType: string;                                  // type of the query: devices, containers, logs, statistics, intervals    
-    // - // the following fields are used if queryType === 'devices'
+    // - // the following fields are used if queryType === QUERY_TYPE_DEVICES
     useDeviceVariable: boolean;
     devicesSelected: Array<SelectableValue<number>>;    // used if useDeviceVariable === false
     deviceVariable: string;                             // used if useDeviceVariable === true
     useTelemParamVariable: boolean;
     telemParamsSelected: string[];
     telemParamVariable: string;
-    // - // the following fields are used if queryType === 'statistics'
+    // - // the following fields are used if queryType === QUERY_TYPE_STATISTICS
     useAccountVariable: boolean;
     accountsSelected: Array<SelectableValue<number>>;   // used if useAccountVariable === false
     accountVariable: string;                            // used if useAccountVariable === true
     useStatParamVariable: boolean;
     statParamsSelected: string[]; 
     statParamVariable: string;    
-    // - // used if queryType === 'devices' || queryType === 'statistics'
+    // - // used if queryType === QUERY_TYPE_DEVICES || queryType === QUERY_TYPE_STATISTICS
     generalizationFunction?: string;                     
 }
 

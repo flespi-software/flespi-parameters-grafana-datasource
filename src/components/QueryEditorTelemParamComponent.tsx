@@ -1,5 +1,6 @@
 import { QueryEditorProps, SelectableValue } from "@grafana/data";
 import { AsyncMultiSelect, InlineField, InlineLabel, Input, Switch } from "@grafana/ui";
+import { QUERY_TYPE_DEVICES } from "../constants";
 import { DataSource, defaultQuery } from "datasource";
 import { FlespiSDK } from "flespi-sdk";
 import { defaults } from "lodash";
@@ -73,9 +74,9 @@ export function TelemetryParameter(props: QueryEditorProps<DataSource, MyQuery, 
       }
 
     /////////////////////////////////////////////////////////////////////////////////
-    // render these controls only for query type 'devices'
+    // render these controls only for query type QUERY_TYPE_DEVICES
     /////////////////////////////////////////////////////////////////////////////////
-    if (query.queryType !== 'devices') {
+    if (query.queryType !== QUERY_TYPE_DEVICES) {
         return <div/>;
     }
 

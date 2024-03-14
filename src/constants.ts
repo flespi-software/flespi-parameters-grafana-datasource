@@ -1,8 +1,14 @@
 import { SelectableValue } from "@grafana/data";
 
+export const REGEX_DEVICES = /^(devices\.\*)|(devices\.(\d+)\.parameters\.\*)/;
+export const REGEX_ACCOUNTS = /^(accounts\.\*)|(accounts\.(\d+)\.statistics\.\*)/;
+
+export const QUERY_TYPE_DEVICES = 'devices';
+export const QUERY_TYPE_STATISTICS = 'statistics';
+
 export const QUERY_TYPE_OPTIONS: Array<SelectableValue<string>> = [
-    { label: 'Devices', value: 'devices' },
-    { label: 'Statistics', value: 'statistics' },
+    { label: 'Devices', value: QUERY_TYPE_DEVICES },
+    { label: 'Statistics', value: QUERY_TYPE_STATISTICS },
     { label: 'Logs', value: 'logs' },
     { label: 'Intervals', value: 'intervals' },
     { label: 'Containers', value: 'containers' },

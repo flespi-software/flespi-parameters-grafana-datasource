@@ -13,23 +13,26 @@ import { MyQuery, MyDataSourceOptions } from './types';
 import { FetchResponse, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { map } from 'rxjs/operators';
 import { FlespiSDK } from 'flespi-sdk';
+import { REGEX_DEVICES, REGEX_ACCOUNTS, QUERY_TYPE_DEVICES } from './constants';
 
 // default query values
 export const defaultQuery: Partial<MyQuery> = {
-  queryType: 'devices',
-  // query for device message parameters
+  queryType: QUERY_TYPE_DEVICES,
+  // queryType === QUERY_TYPE_DEVICES: query devices' messages' parameters (telemetry)
   useDeviceVariable: false,
   devicesSelected: [],
   deviceVariable: '',
   useTelemParamVariable: false,
   telemParamsSelected: ['position.speed'],
   telemParamVariable: '',
+  // queryType = statistics: query account's statistics parameters
   useAccountVariable: false,
   accountsSelected: [],
   accountVariable: '',
   useStatParamVariable: false,
   statParamsSelected: ['*_storage'],
-  statParamVariable: '',   
+  statParamVariable: '',
+  // used for both queryType === QUERY_TYPE_DEVICES and queryType === QUERY_TYPE_STATISTICS
   generalizationFunction: "average",
 };
 
@@ -42,36 +45,64 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     this.url = instanceSettings.url ? instanceSettings.url : '';
   }
 
-  // This function is called when you hit 'Run query' button for dashboard variable with type query
-  // And to resolve possible values of Device and Parameter of variables selects
-  async metricFindQuery(query: string, options?: any): Promise<MetricFindValue[]> {
-    const interpolated = getTemplateSrv().replace(query.trim(), options.scopedVars);
-    const variableRegex = /^(devices\.\*)|(devices\.(\d+)\.parameters\.\*)/;
-    const variableQueryParsed = interpolated.match(variableRegex);
-    if (variableQueryParsed === null) {
-      // wrong variable query
-      // expected queries 'devices.*' or 'devices.$device.params.*'
-      return Promise.resolve([]);
-    }
-    if (variableQueryParsed[0] === 'devices.*') {
-      // this is variable query 'devices.*' - return all flespi devices available for the token
-      return (await FlespiSDK.fetchAllFlespiDevices(this.url)).map(device => {
-        return {
-          text: `#${device.id} - ${device.name.replace(/\./g,'_')}`,
-          value: device.id,
+    // This function is called when you hit 'Run query' button for dashboard variable with type query
+    // And to resolve possible values of Device and Parameter of variables selects
+    async metricFindQuery(query: string, options?: any): Promise<MetricFindValue[]> {
+        const interpolated = getTemplateSrv().replace(query.trim(), options.scopedVars);
+        let variableQueryParsed = interpolated.match(REGEX_DEVICES);
+        if (variableQueryParsed !== null) {
+            // this is devices variable
+            if (variableQueryParsed[0] === 'devices.*') {
+                // this is variable query 'devices.*' - return all flespi devices available for the token
+                return (await FlespiSDK.fetchAllFlespiDevices(this.url)).map(device => {
+                    return {
+                        text: `#${device.id} - ${device.name.replace(/\./g,'_')}`,
+                        value: device.id,
+                    }
+                });
+            } else {
+                // this is variable query 'devices.#device_id - device_name.parameters.*'
+                // device id is in the 3 array element of the parsed query
+                const deviceId = variableQueryParsed[3];
+                const deviceTelemetryParams = await FlespiSDK.fetchDeviceTelemetryParameters(parseInt(deviceId, 10), this.url);
+                // transform returned parameters to the required format [{'text': 'param.1'}, {'text':'param.2'}]
+                return deviceTelemetryParams.map((param) => { 
+                    return { text: param };
+                });
+            }
         }
-      });
-    } else {
-      // this is variable query 'devices.#device_id - device_name.params.*'
-      // device id is in the 3 array element of the parsed query
-      const deviceId = variableQueryParsed[3];
-      const deviceTelemetryParams = await FlespiSDK.fetchDeviceTelemetryParameters(parseInt(deviceId, 10), this.url);
-      // transform returned arameters to the required format [{'text': 'param.1'}, {'text':'param.2'}]
-      return deviceTelemetryParams.map((param) => { 
-        return { text: param };
-      });
+        variableQueryParsed = interpolated.match(REGEX_ACCOUNTS);
+        if (variableQueryParsed !== null) {
+            // this is devices variable
+            if (variableQueryParsed[0] === 'accounts.*') {
+                // this is variable query 'accounts.*' - return all flespi accounts and subaccounts available for the token
+                const accounts = await Promise.all([
+                    FlespiSDK.fetchFlespiAccount(this.url),
+                    FlespiSDK.fetchAllFlespiSubaccounts(this.url)
+                ]);
+                return (await Promise.all(accounts))
+                    .flat()
+                    .map(account => {
+                        return {
+                            text: `#${account.id} - ${account.name.replace(/\./g,'_')}`,
+                            value: account.id,
+                        }
+                    });
+            } else {
+                // this is variable query 'accounts.#account_id - account_name.statistics.*'
+                // account id is in the 3 array element of the parsed query
+                const accountId = variableQueryParsed[3];
+                const accountStatisticsParams = await FlespiSDK.fetchFlespiStatisticsParametersForAccount(parseInt(accountId, 10), this.url);
+                // transform returned parameters to the required format [{'text': 'param.1'}, {'text':'param.2'}]
+                return accountStatisticsParams.map((parameter) => { 
+                    return { text: parameter };
+                });
+            }
+        }  
+
+        // wrong variable query
+        return Promise.resolve([]);
     }
-  }
 
   // This function is called when you edit query or choose device in variable's selector
     query(options: DataQueryRequest<MyQuery>): Observable<DataQueryResponse> {
@@ -82,7 +113,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             console.log(JSON.stringify(query));
             const routePath = '/flespi';
 
-            // if (query.queryType === 'devices') {
+            // if (query.queryType === QUERY_TYPE_DEVICES) {
                 const deviceObservableResponses = query.devicesSelected.map((device => {
                     // now fetch messages for the selected device and full data frame with values of the param
                         const requestParams = this.prepareDeviceMessagesRequestParams(options, query);

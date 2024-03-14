@@ -1,6 +1,7 @@
 import { QueryEditorProps, SelectableValue } from "@grafana/data";
 import { getTemplateSrv } from "@grafana/runtime";
 import { InlineField, InlineLabel, Input, MultiSelect, Switch } from "@grafana/ui";
+import { QUERY_TYPE_DEVICES } from "../constants";
 import { DataSource } from "datasource";
 import { FlespiSDK } from "flespi-sdk";
 import React, { ReactElement, useEffect, useState } from "react";
@@ -93,9 +94,9 @@ export function Device(props: QueryEditorProps<DataSource, MyQuery, MyDataSource
   };
 
     /////////////////////////////////////////////////////////////////////////////////
-    // render these controls only for query type 'devices'
+    // render these controls only for query type QUERY_TYPE_DEVICES
     /////////////////////////////////////////////////////////////////////////////////
-    if (query.queryType !== 'devices') {
+    if (query.queryType !== QUERY_TYPE_DEVICES) {
         return <div/>;
     }
 

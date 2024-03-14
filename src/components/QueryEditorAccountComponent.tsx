@@ -1,6 +1,7 @@
 import { QueryEditorProps, SelectableValue } from "@grafana/data";
 import { getTemplateSrv } from "@grafana/runtime";
 import { InlineField, InlineLabel, Input, MultiSelect, Switch } from "@grafana/ui";
+import { QUERY_TYPE_STATISTICS } from "../constants";
 import { DataSource } from "datasource";
 import { FlespiSDK } from "flespi-sdk";
 import React, { ReactElement, useEffect, useState } from "react";
@@ -16,7 +17,7 @@ export function Account(props: QueryEditorProps<DataSource, MyQuery, MyDataSourc
     const [ error, setError ] = useState<string>("");
 
     useEffect(() => {
-        // load devices and store them into state for the later use in devices drop-down
+        // load accounts and store them into state for the later use in accounts drop-down
         const fetchAccounts = async () => {
             const accounts = await Promise.all([
                 FlespiSDK.fetchFlespiAccount(datasource.url),
@@ -98,9 +99,9 @@ export function Account(props: QueryEditorProps<DataSource, MyQuery, MyDataSourc
   };
 
     /////////////////////////////////////////////////////////////////////////////////
-    // render these controls only for query type 'statistics'
+    // render these controls only for query type QUERY_TYPE_STATISTICS
     /////////////////////////////////////////////////////////////////////////////////
-    if (query.queryType !== 'statistics') {
+    if (query.queryType !== QUERY_TYPE_STATISTICS) {
         return <div/>;
     }
 
