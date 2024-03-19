@@ -54,7 +54,7 @@ export function Account(props: QueryEditorProps<DataSource, MyQuery, MyDataSourc
         processAccountVariableInput(event.target.value);
     }
     /////////////////////////////////////////////////////////////////////////////////
-    // device input hander: focus lost
+    // account input hander: focus lost
     /////////////////////////////////////////////////////////////////////////////////
     const onAccountInputBlur = (event: any) => {
         processAccountVariableInput(event.target.value);
@@ -64,7 +64,7 @@ export function Account(props: QueryEditorProps<DataSource, MyQuery, MyDataSourc
     // account input hander: user types variable name into input
     /////////////////////////////////////////////////////////////////////////////////
     const processAccountVariableInput = (inputValue: string) => {
-        // device variable input field is empty
+        // account variable input field is empty
         if (inputValue === '') {
             // nothing to do, just remove error message, if any
             setError("");
@@ -77,12 +77,12 @@ export function Account(props: QueryEditorProps<DataSource, MyQuery, MyDataSourc
             // matching dashboard variable is found
             setAccountVariable(inputValue);
             setError("");
-            // set new device variable to the query and run query() to render the graph
-            onChange({ ...query, deviceVariable: inputValue });
+            // set new account variable to the query and run query() to render the graph
+            onChange({ ...query, accountVariable: inputValue });
             onRunQuery();
         } else {
             // no matching dashboard variable has been found, display error message
-            setError(`Invalid account variable: no variable ${inputValue} is defined for the dashboard`);
+            setError(`Invalid variable: no variable ${inputValue} is defined for the dashboard`);
         }
     }
 
@@ -90,7 +90,7 @@ export function Account(props: QueryEditorProps<DataSource, MyQuery, MyDataSourc
     // account select hander: changes selected accounts
     /////////////////////////////////////////////////////////////////////////////////
     const onChangeAccountsSelect = (option: Array<SelectableValue<number>>) => {
-        // update selected devices in the form state
+        // update selected accounts in the form state
         setAccountSelected(option);
         // save new parameter to query
         onChange({ ...query, accountsSelected: option });
@@ -106,7 +106,7 @@ export function Account(props: QueryEditorProps<DataSource, MyQuery, MyDataSourc
     }
 
     /////////////////////////////////////////////////////////////////////////////////
-    // render controls to specify flespi device for query
+    // render controls to specify flespi accounts for query
     /////////////////////////////////////////////////////////////////////////////////
     return (
         <div className="gf-form">

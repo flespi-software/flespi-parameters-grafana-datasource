@@ -1,7 +1,7 @@
 import { SelectableValue } from "@grafana/data";
 
 export const REGEX_DEVICES = /^(devices\.\*)|(devices\.(\d+)\.parameters\.\*)/;
-export const REGEX_ACCOUNTS = /^(accounts\.\*)|(accounts\.(\d+)\.statistics\.\*)/;
+export const REGEX_ACCOUNTS = /^(accounts\.\*)|(accounts\.([\d,]+)\.statistics\.\*)/;
 
 export const QUERY_TYPE_DEVICES = 'devices';
 export const QUERY_TYPE_STATISTICS = 'statistics';

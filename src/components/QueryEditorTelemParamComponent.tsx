@@ -6,6 +6,7 @@ import { FlespiSDK } from "flespi-sdk";
 import { defaults } from "lodash";
 import React, { ReactElement, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
+import { getTemplateSrv } from "@grafana/runtime";
 
 
 export function TelemetryParameter(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
@@ -25,6 +26,7 @@ export function TelemetryParameter(props: QueryEditorProps<DataSource, MyQuery, 
         }
         return [];
     });
+    const [ error, setError ] = useState<string>("");
     const devicesSelected = query.devicesSelected;
     const devices = devicesSelected.map((device: SelectableValue<number>) => device.value).join();
 
@@ -66,12 +68,40 @@ export function TelemetryParameter(props: QueryEditorProps<DataSource, MyQuery, 
         onChange({ ...query, telemParamVariable: event.target.value });
       }
     
-      const onParameterInputKeyDown = (event: any) => {
-        if (event.key === 'Enter') {
-          // rerender graph on the panel
-          onRunQuery();
-        }    
-      }
+    const onParameterInputKeyDown = (event: any) => {
+        if (event.key !== 'Enter') {
+            return;
+        }
+        onRunQuery();
+        processVariableInput(event.target.value);
+    }
+    
+    const onParameterInputBlur = (event: any) => {
+        processVariableInput(event.target.value);
+    }
+
+    const processVariableInput = (inputValue: string) => {
+        // variable input field is empty
+        if (inputValue === '') {
+            // nothing to do, just remove error message, if any
+            setError("");
+            return;
+        }
+        // check user input, if this is a valid dashboard varible
+        const interpolations: any[] = [];
+        getTemplateSrv().replace(inputValue, undefined, undefined, interpolations);
+        if (interpolations[0] && interpolations[0].found === true) {
+            // matching dashboard variable is found
+            setTelemParamVariable(inputValue);
+            setError("");
+            // set new variable to the query and run query() to render the graph
+            onChange({ ...query, telemParamVariable: inputValue });
+            onRunQuery();
+        } else {
+            // no matching dashboard variable has been found, display error message
+            setError(`Invalid variable: no variable ${inputValue} is defined for the dashboard`);
+        }
+    }
 
     /////////////////////////////////////////////////////////////////////////////////
     // render these controls only for query type QUERY_TYPE_DEVICES
@@ -114,16 +144,19 @@ export function TelemetryParameter(props: QueryEditorProps<DataSource, MyQuery, 
                 />
             </InlineField>
             ) : (
-            <Input
-                name="parameter"
-                value={telemParamVariable}
-                onChange={onParameterInputChange}
-                onKeyDown={onParameterInputKeyDown}
-                required
-                type="text"
-                width={40}
-                placeholder="$parameter"
-            />
+            <InlineField invalid={error ? true : false} error={error}>
+                <Input
+                    name="parameter"
+                    value={telemParamVariable}
+                    onChange={onParameterInputChange}
+                    onKeyDown={onParameterInputKeyDown}
+                    onBlur={onParameterInputBlur}
+                    required
+                    type="text"
+                    width={40}
+                    placeholder="$parameter"
+                />
+            </InlineField>
         )}
         </div>
     );

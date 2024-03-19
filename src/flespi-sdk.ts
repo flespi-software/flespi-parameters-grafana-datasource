@@ -1,5 +1,7 @@
-import { getBackendSrv } from "@grafana/runtime";
-import { lastValueFrom } from "rxjs";
+import { DataQueryResponse } from "@grafana/data";
+import { FetchResponse, getBackendSrv } from "@grafana/runtime";
+import { Observable, lastValueFrom } from "rxjs";
+// import { map } from 'rxjs/operators';
 
 export interface FlespiDeviceTelemetryResponse {
     result: FlespiDeviceTelemetry[],
@@ -119,5 +121,28 @@ export class FlespiSDK {
         }
 
         return statisticsParameters;
+    }
+
+    // fetch statistics for given account by Id
+    // GET platform/customer/statistics
+    // returns observable fetch response with data
+    static fetchFlespiAccountsStatistics(accountId: string, parameters: string[], url: string, from: number, to: number, genFunction?: string, genInterval?: number): Observable<FetchResponse<DataQueryResponse>> {    
+        // prepare request parameters
+        let requestParameters = `{"from":${from},"to":${to}`;                                   // {"from":FROM,"to":TO
+        if (genFunction !== undefined && (genFunction === 'average' || genFunction === 'minimum' || genFunction === 'maximum') && genInterval !== undefined) {
+            requestParameters += `,"generalize":${genInterval},"method":"${genFunction}"`;      // {"from":FROM,"to":TO,"generalize":GEN_INTERVAL,"method":"GEN_FUNC"
+        }
+        requestParameters += `,"fields":"`;         // {"from":FROM,"to":TO,"generalize":GEN_INTERVAL,"method":"GEN_FUNC","fields":"
+        requestParameters += parameters.join(',');  // {"from":FROM,"to":TO,"generalize":GEN_INTERVAL,"method":"GEN_FUNC","fields":"param1,param2
+        requestParameters += `,timestamp"}`;        // {"from":FROM,"to":TO,"generalize":GEN_INTERVAL,"method":"GEN_FUNC","fields":"param1,param2,timestamp"}
+
+        // execute request and return observable fetch responses
+        return getBackendSrv().fetch<DataQueryResponse> ({        
+            url: url + this.routePath + `/platform/customer/statistics?data=${requestParameters}`,
+            method: 'GET',
+            headers: {
+                'x-flespi-cid': accountId,
+            },
+        })
     }
 }
