@@ -71,6 +71,27 @@ export class FlespiSDK {
         return devicesTelemetryParameters;
     }
 
+    // fetch message of given device by Id
+    // GET gw/devices/messages
+    // returns observable fetch response with data
+    static fetchFlespiDevicesMessages(deviceId: string, parameters: string[], url: string, from: number, to: number, genFunction?: string, genInterval?: number): Observable<FetchResponse<DataQueryResponse>> {    
+        // prepare request parameters
+        let requestParameters = `{"from":${from},"to":${to}`;                                   // {"from":FROM,"to":TO
+        if (genFunction !== undefined && (genFunction === 'average' || genFunction === 'minimum' || genFunction === 'maximum') && genInterval !== undefined) {
+            requestParameters += `,"generalize":${genInterval},"method":"${genFunction}"`;      // {"from":FROM,"to":TO,"generalize":GEN_INTERVAL,"method":"GEN_FUNC"
+        }
+        requestParameters += `,"fields":"`;         // {"from":FROM,"to":TO,"generalize":GEN_INTERVAL,"method":"GEN_FUNC","fields":"
+        requestParameters += parameters.join(',');  // {"from":FROM,"to":TO,"generalize":GEN_INTERVAL,"method":"GEN_FUNC","fields":"param1,param2
+        requestParameters += `,timestamp"}`;        // {"from":FROM,"to":TO,"generalize":GEN_INTERVAL,"method":"GEN_FUNC","fields":"param1,param2,timestamp"}
+
+        // execute request and return observable fetch responses
+        return getBackendSrv().fetch<DataQueryResponse> ({        
+            url: url + this.routePath + `/gw/devices/${deviceId}/messages?data=${requestParameters}`,
+            method: 'GET',
+        })
+    }
+
+
     // fetch subaccounts available for the configured token
     // GET platform/subaccounts/all
     // returns array of subaccounts
