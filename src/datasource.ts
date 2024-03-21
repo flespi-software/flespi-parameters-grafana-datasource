@@ -14,7 +14,7 @@ import { MyQuery, MyDataSourceOptions } from './types';
 import { FetchResponse, getTemplateSrv } from '@grafana/runtime';
 import { map } from 'rxjs/operators';
 import { FlespiSDK } from 'flespi-sdk';
-import { REGEX_DEVICES, REGEX_ACCOUNTS, QUERY_TYPE_DEVICES, QUERY_TYPE_STATISTICS } from './constants';
+import { REGEX_DEVICES, REGEX_ACCOUNTS, QUERY_TYPE_DEVICES, QUERY_TYPE_STATISTICS, tempBackwardCompatibilityConversion } from './constants';
 
 // default query values
 export const defaultQuery: Partial<MyQuery> = {
@@ -50,7 +50,6 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     // And to resolve possible values of Device and Parameter of variables selects
     async metricFindQuery(query: string, options?: any): Promise<MetricFindValue[]> {
         const interpolated = getTemplateSrv().replace(query.trim(), options.scopedVars, 'csv');
-        console.log("========= metricFindQuery()::interpolated " + interpolated);
         let variableQueryParsed = interpolated.match(REGEX_DEVICES);
         if (variableQueryParsed !== null) {
             // this is devices variable
@@ -118,13 +117,16 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         };
     }
 
-  // This function is called when you edit query or choose device in variable's selector
+    // This function is called when you edit query or choose device in variable's selector
     query(options: DataQueryRequest<MyQuery>): Observable<DataQueryResponse> {
 
         const observableResponses: Array<Observable<DataQueryResponse>> = options.targets.map((query) => {
 
             console.log("========== query()");
             console.log(JSON.stringify(query));
+
+            // apply backward compatibility conversion, if needed
+            tempBackwardCompatibilityConversion(query);
 
             // prepare time range parameters for query
             const { range } = options;
@@ -150,23 +152,21 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                     if (query.useDeviceVariable === true) {
                         // resolve accounts ids from variable, that is stored in query.accountVariable field
                         devices = getTemplateSrv().replace(query.deviceVariable, options.scopedVars, 'csv').split(',');
-                        if (devices.length > 1) {
-                            // if the are more than 1 account selected - save account's label to be diplayed on the graph
-                            const currentVariable = getTemplateSrv().getVariables().find(variable => {
-                                return (`$${variable.name}` === query.accountVariable);
-                            });
-                            if (currentVariable !== undefined) {
-                                // get variable options and find corresponding option by account id
-                                const options: Array<ScopedVar<string>> = JSON.parse(JSON.stringify(currentVariable)).options;
-                                devices.map(deviceId => {
-                                    options.find(option  => {
-                                        const optionDeviceId = option.value.split(':')[0];
-                                        if (optionDeviceId === deviceId) {
-                                            devicesLabels[deviceId.toString()] = option.text;
-                                        }
-                                    });
+                        // save device's label to be diplayed on the graph
+                        const currentVariable = getTemplateSrv().getVariables().find(variable => {
+                            return (`$${variable.name}` === query.deviceVariable);
+                        });
+                        if (currentVariable !== undefined) {
+                            // get variable options and find corresponding option by account id
+                            const options: Array<ScopedVar<string>> = JSON.parse(JSON.stringify(currentVariable)).options;
+                            devices.map(deviceId => {
+                                options.find(option  => {
+                                    const optionDeviceId = option.value.split(':')[0];
+                                    if (optionDeviceId === deviceId) {
+                                        devicesLabels[deviceId.toString()] = option.text;
+                                    }
                                 });
-                            }
+                            });
                         }
                     } else {
                         // use ids of selected devices, that are stored in query.devicesSelected field
@@ -174,12 +174,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                             if (device.value === undefined) {
                                 throw new Error("Wrong device value. Device ID is expected.");
                             }
-                            if (query.devicesSelected.length > 1) {
-                                devicesLabels[device.value.toString()] = device.label ? device.label : '';
-                            }
+                            devicesLabels[device.value.toString()] = device.label ? device.label : '';
                             return device.value?.toString();
                         });
-                        console.log("query::devices::" + devices);
                     }
                     // prepare telemetry parameters
                     if (query.useTelemParamVariable === true) {
@@ -187,14 +184,13 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                         telemParameters = getTemplateSrv().replace(query.telemParamVariable, options.scopedVars, 'csv').split(',');
                     } else {
                         telemParameters = query.telemParamsSelected;
-                        console.log("query::telemParameters::" + telemParameters);
                     }
                     console.log("query::devices::" + devices + "::parameters::" + telemParameters + "::");
                     // fetch device messages and transform it to data frame
                     const deviceObservableResponses = devices.map(device => {
                         const observableResponse = FlespiSDK.fetchFlespiDevicesMessages(device, telemParameters, this.url, from, to, genFunction, genInterval)
                         .pipe(
-                            map((response) => this.handleFetchDataQueryResponse(response, query.refId + ':' + device, devicesLabels[device.toString()]))
+                            map((response) => this.handleFetchDataQueryResponse(response, query.refId + ':' + device, (devices.length > 1 || options.targets.length > 1) ? devicesLabels[device.toString()] : undefined))
                         )
                         return observableResponse;
                     })
@@ -207,23 +203,21 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                     if (query.useAccountVariable === true) {
                         // resolve accounts ids from variable, that is stored in query.accountVariable field
                         accounts = getTemplateSrv().replace(query.accountVariable, options.scopedVars, 'csv').split(',');
-                        if (accounts.length > 1) {
-                            // if the are more than 1 account selected - save account's label to be diplayed on the graph
-                            const currentVariable = getTemplateSrv().getVariables().find(variable => {
-                                return (`$${variable.name}` === query.accountVariable);
-                            });
-                            if (currentVariable !== undefined) {
-                                // get variable options and find corresponding option by account id
-                                const options: Array<ScopedVar<string>> = JSON.parse(JSON.stringify(currentVariable)).options;
-                                accounts.map(accountId => {
-                                    options.find(option  => {
-                                        const optionAccountId = option.value.split(':')[0];
-                                        if (optionAccountId === accountId) {
-                                            accountsLabels[accountId.toString()] = option.text;
-                                        }
-                                    });
+                        // save account's label to be diplayed on the graph
+                        const currentVariable = getTemplateSrv().getVariables().find(variable => {
+                            return (`$${variable.name}` === query.accountVariable);
+                        });
+                        if (currentVariable !== undefined) {
+                            // get variable options and find corresponding option by account id
+                            const options: Array<ScopedVar<string>> = JSON.parse(JSON.stringify(currentVariable)).options;
+                            accounts.map(accountId => {
+                                options.find(option  => {
+                                    const optionAccountId = option.value.split(':')[0];
+                                    if (optionAccountId === accountId) {
+                                        accountsLabels[accountId.toString()] = option.text;
+                                    }
                                 });
-                            }
+                            });
                         }
                     } else {
                         // use ids of selected accounts, that are stored in query.accountsSelected field as values
@@ -231,9 +225,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                             if (account.value === undefined) {
                                 throw new Error("Wrong account value. Account ID is expected.");
                             }
-                            if (query.accountsSelected.length > 1) {
-                                accountsLabels[account.value.toString()] = account.label ? account.label : '';
-                            }
+                            accountsLabels[account.value.toString()] = account.label ? account.label : '';
                             return account.value?.toString();
                         });
                     }
@@ -255,7 +247,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                     const accountObservableResponses = accounts.map(account => {
                         const observableResponse = FlespiSDK.fetchFlespiAccountsStatistics(account, statParameters, this.url, from, to, genFunction, genInterval)
                         .pipe(
-                            map((response) => this.handleFetchDataQueryResponse(response, query.refId + ':' + account, accounts.length > 1 ? accountsLabels[account.toString()] : undefined))
+                            map((response) => this.handleFetchDataQueryResponse(response, query.refId + ':' + account, (accounts.length > 1 || options.targets.length > 1) ? accountsLabels[account.toString()] : undefined))
                         )
                         return observableResponse;
                     })
