@@ -131,5 +131,6 @@ To build and watch the plugin frontend code:
 
 1.0.0
   Initial implementation
+  
 1.1.0
   Added visualization of flespi accounts' statistics
