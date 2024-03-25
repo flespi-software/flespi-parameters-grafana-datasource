@@ -33,6 +33,21 @@ export const LOGS_SOURCE_OPTIONS: Array<SelectableValue<string>> = [
     { label: 'Stream', value: LOGS_SOURCE_STREAM },
 ];
 
+export const LOGS_PARAMS_DEVICE_OPTIONS: Array<SelectableValue<string>> = [
+    { label: 'recv', value: 'recv' },
+    { label: 'send', value: 'send' },
+    { label: 'msgs', value: 'msgs' },
+];
+
+export const LOGS_PARAMS_STREAM_OPTIONS: Array<SelectableValue<string>> = [
+    { label: 'accepted', value: 'accepted' },
+    { label: 'ack_latency', value: 'ack_latency' },
+    { label: 'read', value: 'read' },
+    { label: 'rejected', value: 'rejected' },
+    { label: 'skipped', value: 'skipped' },
+    { label: 'read', value: 'read' },
+];
+
 // temporary method for backward compatibility
 export function tempBackwardCompatibilityConversion(query: MyQuery): boolean {
     // backward compatibility

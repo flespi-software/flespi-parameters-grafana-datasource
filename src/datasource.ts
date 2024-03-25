@@ -41,7 +41,7 @@ export const defaultQuery: Partial<MyQuery> = {
   logsSourcesSelected: [],
   logsSourceVariable: '',
   useLogsParamVariable: false,
-  logsParamsSelected: ['recv', 'send'],
+  logsParamsSelected: [],
   logsParamVariable: '',
 };
 

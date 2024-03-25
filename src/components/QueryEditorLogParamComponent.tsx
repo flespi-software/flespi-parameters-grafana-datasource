@@ -1,22 +1,22 @@
 import { QueryEditorProps, SelectableValue } from "@grafana/data";
-import { AsyncMultiSelect, InlineField, InlineLabel, Input, Switch } from "@grafana/ui";
-import { QUERY_TYPE_STATISTICS } from "../constants";
+import { InlineField, InlineLabel, Input, MultiSelect, Switch } from "@grafana/ui";
+import { LOGS_PARAMS_DEVICE_OPTIONS, LOGS_PARAMS_STREAM_OPTIONS, LOGS_SOURCE_DEVICE, LOGS_SOURCE_STREAM, QUERY_TYPE_LOGS } from "../constants";
 import { DataSource, defaultQuery } from "datasource";
-import { FlespiSDK } from "flespi-sdk";
 import { defaults } from "lodash";
 import React, { ReactElement, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
 import { getTemplateSrv } from "@grafana/runtime";
 
-export function StatisticsParameter(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
-    const { onChange, onRunQuery, datasource } = props;
+
+export function LogParameter(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
+    const { onChange, onRunQuery } = props;
     const query = defaults(props.query, defaultQuery);
 
-    const [ useStatParamVariable, setUseStatParamVariable ] = useState<boolean>(query.useStatParamVariable);
-    const [ statParamVariable, setStatParamVariable ] = useState<string>(query.statParamVariable);
-    const [ statParamsSelected, setStatParamsSelected ] = useState<Array<SelectableValue<string>>>(() => {
-        if (query.statParamsSelected) {
-            return query.statParamsSelected.map((parameter) => {
+    const [ useLogsParamVariable, setUseLogsParamVariable ] = useState<boolean>(query.useLogsParamVariable);
+    const [ logsParamVariable, setLogsParamVariable ] = useState<string>(query.logsParamVariable);
+    const [ logsParamsSelected, setLogsParamsSelected ] = useState<Array<SelectableValue<string>>>(() => {
+        if (query.logsParamsSelected) {
+            return query.logsParamsSelected.map((parameter) => {
                 return {
                     label: parameter,
                     value: parameter,
@@ -26,55 +26,31 @@ export function StatisticsParameter(props: QueryEditorProps<DataSource, MyQuery,
         return [];
     });
     const [ error, setError ] = useState<string>("");
-    const accountsSelected = query.accountsSelected;
-    const accounts = accountsSelected.map((device: SelectableValue<number>) => device.value).join();
-
-    // load statistics parameters for the accounts selected in Accounts drop down
-    const loadFlespiStatsParameters = async (inputValue: string) => {
-        if (accountsSelected.toString() === '') {
-            // account is not yet selected, return empty array of parameters
-            return Promise.resolve([]);
-        }
-        // fetch statistics parameters
-        const statistics = await Promise.all(accountsSelected.map(account => {
-            return FlespiSDK.fetchFlespiStatisticsParametersForAccount(account.value ? account.value : 0, datasource.url).then((result: string[]) => {
-                return result
-                // filter parameters based on user input in Parameter select field
-                .filter((parameter: string) => parameter.toLowerCase().includes(inputValue));
-            });
-        }));
-        const statisticsParameters = (await Promise.all(statistics)).flat();
-        const statisticsParametersUnique = new Set(statisticsParameters);
-
-        return Array.from(statisticsParametersUnique.values())
-            .sort()
-            .map((parameter: string) => ({ value: parameter, label: parameter }));
-    };
 
     // handle changes in selected parameter 
     const onChangeParametersSelect = (option: any) => {
         // update form state
-        setStatParamsSelected(option);
+        setLogsParamsSelected(option);
         // save new parameter to query
-        onChange({ ...query, statParamsSelected: option.map((param: SelectableValue<string>) => { return param.value!; }) });
+        onChange({ ...query, logsParamsSelected: option.map((param: SelectableValue<string>) => { return param.value!; }) });
         // execute the query
         onRunQuery();
     };
 
     const onParameterInputChange = (event: any) => {
         // save updated container variable to query
-        setStatParamVariable(event.target.value);
-        onChange({ ...query, statParamVariable: event.target.value });
+        setLogsParamVariable(event.target.value);
+        onChange({ ...query, logsParamVariable: event.target.value });
       }
     
     const onParameterInputKeyDown = (event: any) => {
         if (event.key !== 'Enter') {
             return;
-        }   
+        }
         onRunQuery();
-        processVariableInput(event.target.value); 
+        processVariableInput(event.target.value);
     }
-
+    
     const onParameterInputBlur = (event: any) => {
         processVariableInput(event.target.value);
     }
@@ -91,10 +67,10 @@ export function StatisticsParameter(props: QueryEditorProps<DataSource, MyQuery,
         getTemplateSrv().replace(inputValue, undefined, undefined, interpolations);
         if (interpolations[0] && interpolations[0].found === true) {
             // matching dashboard variable is found
-            setStatParamVariable(inputValue);
+            setLogsParamVariable(inputValue);
             setError("");
             // set new variable to the query and run query() to render the graph
-            onChange({ ...query, telemParamVariable: inputValue });
+            onChange({ ...query, logsParamVariable: inputValue });
             onRunQuery();
         } else {
             // no matching dashboard variable has been found, display error message
@@ -103,42 +79,47 @@ export function StatisticsParameter(props: QueryEditorProps<DataSource, MyQuery,
     }
 
     /////////////////////////////////////////////////////////////////////////////////
-    // render these controls only for query type QUERY_TYPE_STATISTICS
+    // render these controls only for query type QUERY_TYPE_LOGS
     /////////////////////////////////////////////////////////////////////////////////
-    if (query.queryType !== QUERY_TYPE_STATISTICS) {
+    if (query.queryType !== QUERY_TYPE_LOGS) {
         return <div/>;
     }
 
     /////////////////////////////////////////////////////////////////////////////////
-    // render controls to specify statistics parameters of flespi account for query
+    // render controls to specify logs parameters of flespi items for query
     /////////////////////////////////////////////////////////////////////////////////
+    let options;
+    switch(query.logsSourceType) {
+        case LOGS_SOURCE_DEVICE:
+            options = LOGS_PARAMS_DEVICE_OPTIONS;
+            break;
+        case LOGS_SOURCE_STREAM:
+            options = LOGS_PARAMS_STREAM_OPTIONS;
+            break;
+    }
     return (
         <div  className="gf-form">
-            <InlineLabel width={16} tooltip="Choose statistics parameters for query">
+            <InlineLabel width={16} tooltip="Choose logs parameters for query">
                 Parameters
             </InlineLabel>
             <InlineField label="Use dashboard variable">
                 <div className='gf-form-switch'>
                 <Switch
-                    value={!!useStatParamVariable}
+                    value={!!useLogsParamVariable}
                     onChange={() => {
-                        setUseStatParamVariable(!useStatParamVariable);
-                        onChange({ ...query, useStatParamVariable: !query.useStatParamVariable });
+                        setUseLogsParamVariable(!useLogsParamVariable);
+                        onChange({ ...query, useLogsParamVariable: !query.useLogsParamVariable });
                     }}
                 />
                 </div>     
             </InlineField>
-            {!useStatParamVariable ? (
-                <InlineField labelWidth={16}>
-                <AsyncMultiSelect
-                    key={accounts}
-                    value={statParamsSelected}
-                    loadOptions={loadFlespiStatsParameters}
-                    defaultOptions
-                    cacheOptions
+        {!useLogsParamVariable ? (
+            <InlineField labelWidth={16}>
+                <MultiSelect
+                    value={logsParamsSelected}
+                    options={options}
                     onChange={onChangeParametersSelect}
                     width={40}
-                    noOptionsMessage="Telemetry not found"
                     allowCustomValue={true}
                 />
             </InlineField>
@@ -146,7 +127,7 @@ export function StatisticsParameter(props: QueryEditorProps<DataSource, MyQuery,
             <InlineField invalid={error ? true : false} error={error}>
                 <Input
                     name="parameter"
-                    value={statParamVariable}
+                    value={logsParamVariable}
                     onChange={onParameterInputChange}
                     onKeyDown={onParameterInputKeyDown}
                     onBlur={onParameterInputBlur}
@@ -156,7 +137,7 @@ export function StatisticsParameter(props: QueryEditorProps<DataSource, MyQuery,
                     placeholder="$parameter"
                 />
             </InlineField>
-            )}
+        )}
         </div>
     );
 }

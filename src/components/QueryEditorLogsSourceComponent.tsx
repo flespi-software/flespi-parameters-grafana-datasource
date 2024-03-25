@@ -30,6 +30,7 @@ export function LogsSource(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
                     }
                 });
             } else {
+                // query.logsSourceType === LOGS_SOURCE_STREAM
                 values = (await FlespiSDK.fetchAllFlespiStreams(datasource.url)).map(stream => {
                     return {
                         label: stream.name,
@@ -76,7 +77,7 @@ export function LogsSource(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
           setError("");
           return;
         }
-        // check user input, if this is a valid dashboard varible
+        // check user input, if this is a valid dashboard variable
         const interpolations: any[] = [];
         getTemplateSrv().replace(inputValue, undefined, undefined, interpolations);
         if (interpolations[0] && interpolations[0].found === true) {
