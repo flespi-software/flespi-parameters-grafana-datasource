@@ -14,7 +14,7 @@ import { MyQuery, MyDataSourceOptions } from './types';
 import { FetchResponse, getTemplateSrv } from '@grafana/runtime';
 import { map } from 'rxjs/operators';
 import { FlespiSDK } from 'flespi-sdk';
-import { REGEX_DEVICES, REGEX_ACCOUNTS, QUERY_TYPE_DEVICES, QUERY_TYPE_STATISTICS, tempBackwardCompatibilityConversion } from './constants';
+import { REGEX_DEVICES, REGEX_ACCOUNTS, QUERY_TYPE_DEVICES, QUERY_TYPE_STATISTICS, tempBackwardCompatibilityConversion, LOGS_SOURCE_DEVICE } from './constants';
 
 // default query values
 export const defaultQuery: Partial<MyQuery> = {
@@ -34,7 +34,15 @@ export const defaultQuery: Partial<MyQuery> = {
   statParamsSelected: ['*_storage'],
   statParamVariable: '',
   // used for both queryType === QUERY_TYPE_DEVICES and queryType === QUERY_TYPE_STATISTICS
-  generalizationFunction: "average",
+  generalizationFunction: "average", 
+  // the following fields are used if queryType === QUERY_TYPE_LOGS
+  logsSourceType: LOGS_SOURCE_DEVICE,                              
+  useLogsSourceVariable: false,
+  logsSourcesSelected: [],
+  logsSourceVariable: '',
+  useLogsParamVariable: false,
+  logsParamsSelected: ['recv', 'send'],
+  logsParamVariable: '',
 };
 
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {

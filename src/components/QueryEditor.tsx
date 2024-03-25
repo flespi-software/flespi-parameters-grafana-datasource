@@ -9,6 +9,8 @@ import { TelemetryParameter } from "./QueryEditorTelemParamComponent";
 import { StatisticsParameter } from "./QueryEditorStatParamComponent";
 import { GneralizationFunction } from "./QueryEditorGenFuncComponent";
 import { tempBackwardCompatibilityConversion } from "../constants";
+import { LogsSource } from "./QueryEditorLogsSourceComponent";
+import { LogsSourceType } from "./QueryEditorLogsSourceTypeComponent";
 
 export function QueryEditor(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource, query } = props;
@@ -26,6 +28,8 @@ export function QueryEditor(props: QueryEditorProps<DataSource, MyQuery, MyDataS
             <Account datasource={datasource} query={query} onRunQuery={onRunQuery} onChange={onChange} />
             <StatisticsParameter datasource={datasource} query={query} onRunQuery={onRunQuery} onChange={onChange} />
             <GneralizationFunction datasource={datasource} query={query} onRunQuery={onRunQuery} onChange={onChange} />
+            <LogsSourceType datasource={datasource} query={query} onRunQuery={onRunQuery} onChange={onChange} />
+            <LogsSource datasource={datasource} query={query} onRunQuery={onRunQuery} onChange={onChange} />
         </>
     );
 }

@@ -6,11 +6,12 @@ export const REGEX_ACCOUNTS = /^(accounts\.\*)|(accounts\.([\d,]+)\.statistics\.
 
 export const QUERY_TYPE_DEVICES = 'devices';
 export const QUERY_TYPE_STATISTICS = 'statistics';
+export const QUERY_TYPE_LOGS = 'logs';
 
 export const QUERY_TYPE_OPTIONS: Array<SelectableValue<string>> = [
     { label: 'Devices', value: QUERY_TYPE_DEVICES },
     { label: 'Statistics', value: QUERY_TYPE_STATISTICS },
-    { label: 'Logs', value: 'logs' },
+    { label: 'Logs', value: QUERY_TYPE_LOGS },
     { label: 'Intervals', value: 'intervals' },
     { label: 'Containers', value: 'containers' },
 ];
@@ -22,6 +23,14 @@ export const GEN_FUNC_OPTIONS: Array<SelectableValue<string>> = [
     { label: 'average', value: GEN_FUNC_AVERAGE },
     { label: 'maximum', value: 'maximum' },
     { label: 'minimum', value: 'minimum' },
+];
+
+export const LOGS_SOURCE_DEVICE = 'device';
+export const LOGS_SOURCE_STREAM = 'stream';
+
+export const LOGS_SOURCE_OPTIONS: Array<SelectableValue<string>> = [
+    { label: 'Device', value: LOGS_SOURCE_DEVICE },
+    { label: 'Stream', value: LOGS_SOURCE_STREAM },
 ];
 
 // temporary method for backward compatibility

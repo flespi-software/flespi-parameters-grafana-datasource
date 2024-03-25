@@ -1,40 +1,44 @@
 import { QueryEditorProps } from "@grafana/data";
 import { InlineField, RadioButtonGroup } from "@grafana/ui";
-import { QUERY_TYPE_OPTIONS } from "../constants";
+import { LOGS_SOURCE_OPTIONS, QUERY_TYPE_LOGS } from "../constants";
 import { DataSource, defaultQuery } from "datasource";
 import { defaults } from "lodash";
 import React, { ReactElement, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
 
 
-export function QueryType(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
+export function LogsSourceType(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, query } = props;  
     const defaultedQuery = defaults(query, defaultQuery);
-    const [ queryType, setQueryType ] = useState<string>(defaultedQuery.queryType);
-
-    const disabledOptions = ['intervals', 'containers'];
+    const [ logsSourceType, setLogsSourceType ] = useState<string>(defaultedQuery.logsSourceType);
 
     /////////////////////////////////////////////////////////////////////////////////
     // user changed query type switch (radio buttons group)
     /////////////////////////////////////////////////////////////////////////////////
-    const onQueryTypeChange = (event: any) => {
+    const onLogsSourceTypeChange = (event: any) => {
         // update component state
-        setQueryType(event);
+        setLogsSourceType(event);
         // update query
-        onChange({ ...query, queryType: event });
+        onChange({ ...query, logsSourceType: event });
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // render these controls only for query type QUERY_TYPE_LOGS
+    /////////////////////////////////////////////////////////////////////////////////
+    if (query.queryType !== QUERY_TYPE_LOGS) {
+        return <div/>;
     }
 
     /////////////////////////////////////////////////////////////////////////////////
-    // render Query Type element: radio buttons group 
+    // render Logs Source Type element: radio buttons group 
     /////////////////////////////////////////////////////////////////////////////////
     return (
         <div className="gf-form">
-          <InlineField label="Query Type" labelWidth={26}>
+          <InlineField label="Logs Source" labelWidth={26}>
             <RadioButtonGroup 
-                options={QUERY_TYPE_OPTIONS}
-                disabledOptions={disabledOptions}
-                value={queryType} 
-                onChange={onQueryTypeChange} />
+                options={LOGS_SOURCE_OPTIONS}
+                value={logsSourceType} 
+                onChange={onLogsSourceTypeChange} />
           </InlineField>
         </div>
       );

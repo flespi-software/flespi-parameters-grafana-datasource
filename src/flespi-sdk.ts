@@ -167,4 +167,18 @@ export class FlespiSDK {
             },
         })
     }
+
+    // fetch all flespi streams available for the configured token
+    // GET gw/streams/all
+    // returns array of devices:     
+    // [{"id": 395457, "name": "my stream1"}, {"id": 1543533, "name": "my stream2"}]
+    static async fetchAllFlespiStreams(url: string): Promise<FlespiEntity[]> {
+        const observableResponse = getBackendSrv().fetch<FlespiEntytiesResponse>({
+            url: url + this.routePath + '/gw/streams/all?fields=id%2Cname',
+            method: 'GET',
+        });
+
+        const response = await lastValueFrom(observableResponse);
+        return response.data.result;
+    }   
 }

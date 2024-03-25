@@ -25,7 +25,15 @@ export interface MyQuery extends DataQuery {
     statParamsSelected: string[]; 
     statParamVariable: string;    
     // - // used if queryType === QUERY_TYPE_DEVICES || queryType === QUERY_TYPE_STATISTICS
-    generalizationFunction?: string;                     
+    generalizationFunction?: string;   
+    // - // the following fields are used if queryType === QUERY_TYPE_LOGS
+    logsSourceType: string;                             // source of the logs: device, stream etc
+    useLogsSourceVariable: boolean;
+    logsSourcesSelected: Array<SelectableValue<number>>;
+    logsSourceVariable: string;
+    useLogsParamVariable: boolean;
+    logsParamsSelected: string[];
+    logsParamVariable: string;                
 }
 
 /**
