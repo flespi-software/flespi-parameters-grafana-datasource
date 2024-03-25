@@ -3,6 +3,7 @@ import { MyQuery } from "types";
 
 export const REGEX_DEVICES = /^(devices\.\*)|(devices\.(\d+)\.parameters\.\*)/;
 export const REGEX_ACCOUNTS = /^(accounts\.\*)|(accounts\.([\d,]+)\.statistics\.\*)/;
+export const VARIABLES_QUERY_STREAMS = 'streams.*';
 
 export const QUERY_TYPE_DEVICES = 'devices';
 export const QUERY_TYPE_STATISTICS = 'statistics';
@@ -45,7 +46,6 @@ export const LOGS_PARAMS_STREAM_OPTIONS: Array<SelectableValue<string>> = [
     { label: 'read', value: 'read' },
     { label: 'rejected', value: 'rejected' },
     { label: 'skipped', value: 'skipped' },
-    { label: 'read', value: 'read' },
 ];
 
 // temporary method for backward compatibility

@@ -14,7 +14,7 @@ import { MyQuery, MyDataSourceOptions } from './types';
 import { FetchResponse, getTemplateSrv } from '@grafana/runtime';
 import { map } from 'rxjs/operators';
 import { FlespiSDK } from 'flespi-sdk';
-import { REGEX_DEVICES, REGEX_ACCOUNTS, QUERY_TYPE_DEVICES, QUERY_TYPE_STATISTICS, tempBackwardCompatibilityConversion, LOGS_SOURCE_DEVICE } from './constants';
+import { REGEX_DEVICES, REGEX_ACCOUNTS, QUERY_TYPE_DEVICES, QUERY_TYPE_STATISTICS, tempBackwardCompatibilityConversion, LOGS_SOURCE_DEVICE, VARIABLES_QUERY_STREAMS, QUERY_TYPE_LOGS, LOGS_SOURCE_STREAM } from './constants';
 
 // default query values
 export const defaultQuery: Partial<MyQuery> = {
@@ -57,6 +57,15 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     // This function is called when you hit 'Run query' button for dashboard variable with type query
     // And to resolve possible values of Device and Parameter of variables selects
     async metricFindQuery(query: string, options?: any): Promise<MetricFindValue[]> {
+        if (query.trim() === VARIABLES_QUERY_STREAMS) {
+            // this is streams variable
+            return (await FlespiSDK .fetchAllFlespiStreams(this.url)).map(stream => {
+                return {
+                    text: `#${stream.id} - ${stream.name.replace(/\./g,'_')}`,
+                    value: stream.id,
+                }
+            });
+        }
         const interpolated = getTemplateSrv().replace(query.trim(), options.scopedVars, 'csv');
         let variableQueryParsed = interpolated.match(REGEX_DEVICES);
         if (variableQueryParsed !== null) {
@@ -82,7 +91,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         }
         variableQueryParsed = interpolated.match(REGEX_ACCOUNTS);
         if (variableQueryParsed !== null) {
-            // this is devices variable
+            // this is accounts variable
             if (variableQueryParsed[0] === 'accounts.*') {
                 // this is variable query 'accounts.*' - return all flespi accounts and subaccounts available for the token
                 const accounts = await Promise.all([
@@ -158,11 +167,11 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             // determine the type of query to perform
             switch(query.queryType) {
                 case QUERY_TYPE_DEVICES:
-                    let devices: string[], telemParameters: string[], devicesLabels: {[key: string]: string,} = {}
+                    let devices: string[], telemParameters: string[], devicesLabels: {[key: string]: string,} = {};
                     if (query.useDeviceVariable === true) {
                         // resolve accounts ids from variable, that is stored in query.accountVariable field
                         devices = getTemplateSrv().replace(query.deviceVariable, options.scopedVars, 'csv').split(',');
-                        // save device's label to be diplayed on the graph
+                        // save device's label to be displayed on the graph
                         const currentVariable = getTemplateSrv().getVariables().find(variable => {
                             return (`$${variable.name}` === query.deviceVariable);
                         });
@@ -203,7 +212,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                             map((response) => this.handleFetchDataQueryResponse(response, query.refId + ':' + device, (devices.length > 1 || options.targets.length > 1) ? devicesLabels[device.toString()] : undefined))
                         )
                         return observableResponse;
-                    })
+                    });
                     return merge(...deviceObservableResponses); 
 
                 case QUERY_TYPE_STATISTICS:
@@ -262,6 +271,104 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                         return observableResponse;
                     })
                     return merge(...accountObservableResponses); 
+
+                case QUERY_TYPE_LOGS:
+                    // prepare logs parameters
+                    let logParameters: string[];
+                    if (query.useLogsParamVariable === true) {
+                        // resolve parameters from variable, that is stored in query.logsParamVariable field
+                        logParameters = getTemplateSrv().replace(query.logsParamVariable, options.scopedVars, 'csv').split(',');
+                    } else {
+                        logParameters = query.logsParamsSelected;
+                    }
+                    switch (query.logsSourceType) {
+                        case LOGS_SOURCE_DEVICE:
+                            let devices: string[], devicesLabels: {[key: string]: string,} = {};
+                            if (query.useLogsSourceVariable === true) {
+                                // resolve devices from variable that is stored in variable query.logsSourceVariable
+                                devices = getTemplateSrv().replace(query.logsSourceVariable, options.scopedVars, 'csv').split(',');
+                                // prepare streams labels to be displayed later on the graph 
+                                const currentVariable = getTemplateSrv().getVariables().find(variable => {
+                                    return (`$${variable.name}` === query.logsSourceVariable);
+                                });
+                                if (currentVariable !== undefined) {
+                                    // get variable options and find corresponding option by account id
+                                    const options: Array<ScopedVar<string>> = JSON.parse(JSON.stringify(currentVariable)).options;
+                                    devices.map(deviceId => {
+                                        options.find(option  => {
+                                            const optionDeviceId = option.value.split(':')[0];
+                                            if (optionDeviceId === deviceId) {
+                                                devicesLabels[deviceId.toString()] = option.text;
+                                            }
+                                        });
+                                    });
+                                }                            
+                            } else {
+                                // use ids of selected streams, that are stored in query.logsSourcesSelected field
+                                devices = query.logsSourcesSelected.map(device => {
+                                    if (device.value === undefined) {
+                                        throw new Error("Wrong device value. Device ID is expected.");
+                                    }
+                                    devicesLabels[device.value.toString()] = device.label ? device.label : '';
+                                    return device.value?.toString();
+                                });
+                            }
+                            console.log("query::logs::devices::" + devices + "::parameters::" + logParameters + "::");
+                            // fetch device's logs and transform it to data frame
+                            const deviceObservableResponses = devices.map(device => {
+                                const observableResponse = FlespiSDK.fetchFlespiDevicesLogs(device, logParameters, this.url, from, to)
+                                .pipe(
+                                    map((response) => this.handleFetchDataQueryResponse(response, query.refId + ':' + device, (devices.length > 1 || options.targets.length > 1) ? devicesLabels[device.toString()] : undefined))
+                                )
+                                return observableResponse;
+                            });
+                            return merge(...deviceObservableResponses); 
+
+                        case LOGS_SOURCE_STREAM:
+                            let streams: string[], streamsLabels: {[key: string]: string,} = {};
+                            if (query.useLogsSourceVariable === true) {
+                                // resolve streams from variable that is stored in variable query.logsSourceVariable
+                                streams = getTemplateSrv().replace(query.logsSourceVariable, options.scopedVars, 'csv').split(',');
+                                // prepare streams labels to be displayed later on the graph 
+                                const currentVariable = getTemplateSrv().getVariables().find(variable => {
+                                    return (`$${variable.name}` === query.logsSourceVariable);
+                                });
+                                if (currentVariable !== undefined) {
+                                    // get variable options and find corresponding option by account id
+                                    const options: Array<ScopedVar<string>> = JSON.parse(JSON.stringify(currentVariable)).options;
+                                    streams.map(streamId => {
+                                        options.find(option  => {
+                                            const optionStreamId = option.value.split(':')[0];
+                                            if (optionStreamId === streamId) {
+                                                streamsLabels[streamId.toString()] = option.text;
+                                            }
+                                        });
+                                    });
+                                }                            
+                            } else {
+                                // use ids of selected streams, that are stored in query.logsSourcesSelected field
+                                streams = query.logsSourcesSelected.map(stream => {
+                                    if (stream.value === undefined) {
+                                        throw new Error("Wrong stream value. Stream ID is expected.");
+                                    }
+                                    streamsLabels[stream.value.toString()] = stream.label ? stream.label : '';
+                                    return stream.value?.toString();
+                                });
+                            }
+                            console.log("query::logs::streams::" + streams + "::parameters::" + logParameters + "::");
+                            // fetch stream's logs and transform it to data frame
+                            const streamObservableResponses = streams.map(stream => {
+                                const observableResponse = FlespiSDK.fetchFlespiStreamsLogs(stream, logParameters, this.url, from, to)
+                                .pipe(
+                                    map((response) => this.handleFetchDataQueryResponse(response, query.refId + ':' + stream, (streams.length > 1 || options.targets.length > 1) ? streamsLabels[stream.toString()] : undefined))
+                                )
+                                return observableResponse;
+                            });
+                            return merge(...streamObservableResponses); 
+                            
+                        default:
+                            return new Observable<DataQueryResponse>();
+                    }
 
                 default:
                     return new Observable<DataQueryResponse>();

@@ -92,6 +92,22 @@ export class FlespiSDK {
         })
     }
 
+    // fetch logs of given device by Id
+    // GET gw/devices/logs
+    // returns observable fetch response with data
+    static fetchFlespiDevicesLogs(deviceId: string, parameters: string[], url: string, from: number, to: number): Observable<FetchResponse<DataQueryResponse>> {    
+        // prepare request parameters
+        let requestParameters = `{"from":${from},"to":${to}`;   // {"from":FROM,"to":TO
+        requestParameters += `,"fields":"`;                     // {"from":FROM,"to":TO,"fields":"
+        requestParameters += parameters.join(',');              // {"from":FROM,"to":TO,"fields":"param1,param2
+        requestParameters += `,timestamp"}`;                    // {"from":FROM,"to":TO,"fields":"param1,param2,timestamp"}
+
+        // execute request and return observable fetch responses
+        return getBackendSrv().fetch<DataQueryResponse> ({        
+            url: url + this.routePath + `/gw/devices/${deviceId}/logs?data=${requestParameters}`,
+            method: 'GET',
+        })
+    }
 
     // fetch subaccounts available for the configured token
     // GET platform/subaccounts/all
@@ -180,5 +196,22 @@ export class FlespiSDK {
 
         const response = await lastValueFrom(observableResponse);
         return response.data.result;
-    }   
+    }  
+    
+    // fetch logs of given stream by Id
+    // GET gw/streams/logs
+    // returns observable fetch response with data
+    static fetchFlespiStreamsLogs(streamId: string, parameters: string[], url: string, from: number, to: number): Observable<FetchResponse<DataQueryResponse>> {    
+        // prepare request parameters
+        let requestParameters = `{"from":${from},"to":${to}`;   // {"from":FROM,"to":TO
+        requestParameters += `,"fields":"`;                     // {"from":FROM,"to":TO,"fields":"
+        requestParameters += parameters.join(',');              // {"from":FROM,"to":TO,"fields":"param1,param2
+        requestParameters += `,timestamp"}`;                    // {"from":FROM,"to":TO,"fields":"param1,param2,timestamp"}
+
+        // execute request and return observable fetch responses
+        return getBackendSrv().fetch<DataQueryResponse> ({        
+            url: url + this.routePath + `/gw/streams/${streamId}/logs?data=${requestParameters}`,
+            method: 'GET',
+        })
+    }
 }

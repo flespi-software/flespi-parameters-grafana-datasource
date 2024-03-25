@@ -113,17 +113,19 @@ export function LogsSource(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
     /////////////////////////////////////////////////////////////////////////////////
     // render controls to specify flespi items for query
     /////////////////////////////////////////////////////////////////////////////////
-    let tooltip, label, placeholder
+    let tooltip, label, placeholderSelect, placeholderInput
     switch(query.logsSourceType) {
         case LOGS_SOURCE_DEVICE:
             label = 'Devices';
             tooltip = 'Choose devices for query';
-            placeholder = 'Select device';
+            placeholderSelect = 'Select device';
+            placeholderInput = '$device';
             break;
         case LOGS_SOURCE_STREAM:
             label = 'Streams';
             tooltip = 'Choose streams for query';
-            placeholder = 'Select stream';
+            placeholderSelect = 'Select stream';
+            placeholderInput = '$stream';
             break;
     }
     return (
@@ -150,7 +152,7 @@ export function LogsSource(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
                 options={logsSources}
                 onChange={onChangeLogsSourcesSelect}
                 width={40}
-                placeholder={placeholder}
+                placeholder={placeholderSelect}
               />
             </InlineField>
           ) : (
@@ -165,7 +167,7 @@ export function LogsSource(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
                 required
                 type="text"
                 width={40}
-                placeholder="$item"
+                placeholder={placeholderInput}
               />
             </InlineField>
           )}
