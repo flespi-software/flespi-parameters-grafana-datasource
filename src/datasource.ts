@@ -395,8 +395,12 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         let valuesArrayLength = 0;
 
         // iterate over returned container messages
+        console.log(response);
         const messages = response.data.result;
         const messagesCount = messages.length;
+        if (messagesCount === 0) {
+            return { data: [] };
+        }
         for (let i = 0; i < messagesCount; i++) {
             const message: any = messages[i];
             // collect time value for data frame
