@@ -132,10 +132,11 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         // select all flespi devices available for the configured token
         const flespiDevices = await FlespiSDK.fetchAllFlespiDevices(this.url);
         const flespiAccount = await FlespiSDK.fetchFlespiAccount(this.url);
-        const flespiSubaccounts = await FlespiSDK.fetchAllFlespiSubaccounts(this.url);        
+        const flespiSubaccounts = await FlespiSDK.fetchAllFlespiSubaccounts(this.url);
+        const flespiStreams = await FlespiSDK.fetchAllFlespiStreams(this.url);        
         return {
             status: 'success',
-            message: `Success! The configured token has access to ${flespiDevices.length} flespi devices, account ID ${flespiAccount[0].id} and ${flespiSubaccounts.length} subaccounts.`,
+            message: `Success! The configured token has access to ${flespiDevices.length} flespi devices, ${flespiStreams.length} streams, account ID ${flespiAccount[0].id} and ${flespiSubaccounts.length} subaccounts.`,
         };
     }
 
