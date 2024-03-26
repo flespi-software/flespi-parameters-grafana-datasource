@@ -115,6 +115,7 @@ The following queries can be used to create variable:
 | devices.${device}.parameters.*     | fetch numeric parameters for the selected device            |
 | accounts.*                         | fetch account and subaccounts available for given token     |
 | accounts.${account}.statistics.*   | fetch statistics parameters for the selected (sub)accounts  |
+| streams.*                          | fetch all streams available for given token                 |
 
 
 ### Dev setup

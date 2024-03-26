@@ -60,8 +60,10 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         if (query.trim() === VARIABLES_QUERY_STREAMS) {
             // this is streams variable
             return (await FlespiSDK .fetchAllFlespiStreams(this.url)).map(stream => {
+                console.log(stream);
+                const steamName = stream.name !== '' ? stream.name.replace(/\./g,'_') : '<noname>';
                 return {
-                    text: `#${stream.id} - ${stream.name.replace(/\./g,'_')}`,
+                    text: `#${stream.id} - ${steamName}`,
                     value: stream.id,
                 }
             });
@@ -73,8 +75,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             if (variableQueryParsed[0] === 'devices.*') {
                 // this is variable query 'devices.*' - return all flespi devices available for the token
                 return (await FlespiSDK.fetchAllFlespiDevices(this.url)).map(device => {
+                    const deviceName = device.name !== '' ? device.name.replace(/\./g,'_') : '<noname>';
                     return {
-                        text: `#${device.id} - ${device.name.replace(/\./g,'_')}`,
+                        text: `#${device.id} - ${deviceName}`,
                         value: device.id,
                     }
                 });
@@ -395,7 +398,6 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         let valuesArrayLength = 0;
 
         // iterate over returned container messages
-        console.log(response);
         const messages = response.data.result;
         const messagesCount = messages.length;
         if (messagesCount === 0) {
