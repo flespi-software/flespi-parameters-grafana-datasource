@@ -214,4 +214,60 @@ export class FlespiSDK {
             method: 'GET',
         })
     }
+
+    // fetch all flespi containers available for the configured token
+    // GET gw/containers/all
+    // returns array of devices:     
+    // [{"id": 395457, "name": "my container1"}, {"id": 1543533, "name": "my container2"}]
+    static async fetchAllFlespiContainers(url: string): Promise<FlespiEntity[]> {
+        const observableResponse = getBackendSrv().fetch<FlespiEntytiesResponse>({
+            url: url + this.routePath + '/storage/containers/all?fields=id%2Cname',
+            method: 'GET',
+        });
+
+        const response = await lastValueFrom(observableResponse);
+        return response.data.result;
+    } 
+
+    // fetch possible parameters of container given by Id
+    // GET storage/containers/messages
+    // returns JS array of parameters' names
+    static async fetchFlespiContainerParameters(containerId: number, url: string, parameterMask: string): Promise<string[]> {
+        const observableResponse = getBackendSrv().fetch<FlespiCustomerStatisticsResponse>({
+            url: url + this.routePath + `/storage/containers/${containerId}/messages?data={"max_count":1,"reverse":true,"fields":"${parameterMask}"}`,
+            method: 'GET',
+        });
+        const response = await lastValueFrom(observableResponse);
+        const params = response.data.result[0].params;
+        if (params === null) {
+            return Promise.resolve([]);
+        }
+        const containerParameters: string[] = [];
+        Object.keys(params).map(param => {
+            containerParameters.push(param);
+        });
+        
+        return containerParameters;
+    } 
+
+    // fetch message of given device by Id
+    // GET storage/containers/messages
+    // returns observable fetch response with data
+    static fetchFlespiContainersMessages(containerId: string, parameters: string[], url: string, from: number, to: number, genFunction?: string, genInterval?: number): Observable<FetchResponse<DataQueryResponse>> {    
+        // prepare request parameters
+        let requestParameters = `{"left_key":${from},"right_key":${to}`;    // {"left_key":FROM,"right_key":TO
+        if (genFunction !== undefined && (genFunction === 'average' || genFunction === 'minimum' || genFunction === 'maximum') 
+            && genInterval !== undefined && genInterval >= 10) {
+            requestParameters += `,"generalize":${genInterval},"method":"${genFunction}"`;      // {"left_key":FROM,"right_key":TO,"generalize":GEN_INTERVAL,"method":"GEN_FUNC"
+        }
+        requestParameters += `,"fields":"`;         // {"left_key":FROM,"right_key":TO,"generalize":GEN_INTERVAL,"method":"GEN_FUNC","fields":"
+        requestParameters += parameters.join(',');  // {"left_key":FROM,"right_key":TO,"generalize":GEN_INTERVAL,"method":"GEN_FUNC","fields":"param1,param2
+        requestParameters += `,timestamp"}`;        // {"left_key":FROM,"right_key":TO,"generalize":GEN_INTERVAL,"method":"GEN_FUNC","fields":"param1,param2,timestamp"}
+
+        // execute request and return observable fetch responses
+        return getBackendSrv().fetch<DataQueryResponse> ({        
+            url: url + this.routePath + `/storage/containers/${containerId}/messages?data=${requestParameters}`,
+            method: 'GET',
+        })
+    }
 }

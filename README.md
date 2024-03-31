@@ -109,13 +109,15 @@ ________________________________________________
 ### Plugin supports template variables.
 The following queries can be used to create variable:
 
-| Query                              | Description                                                 |
-| ---------------------------------- |:-----------------------------------------------------------:|
-| devices.*                          | fetch all devices available for given token                 |
-| devices.${device}.parameters.*     | fetch numeric parameters for the selected device            |
-| accounts.*                         | fetch account and subaccounts available for given token     |
-| accounts.${account}.statistics.*   | fetch statistics parameters for the selected (sub)accounts  |
-| streams.*                          | fetch all streams available for given token                 |
+| Query                               | Description                                                 |
+| ------------------------------------|:-----------------------------------------------------------:|
+| devices.*                           | fetch all devices available for given token                 |
+| devices.${device}.parameters.*      | fetch telemetry parameters for the selected device          |
+| accounts.*                          | fetch account and subaccounts available for given token     |
+| accounts.${account}.statistics.*    | fetch statistics parameters for the selected (sub)accounts  |
+| streams.*                           | fetch all streams available for given token                 |
+| containers.*                        | fetch all containers available for given token              |
+| containers.${container}.parameters.*| fetch parameters of the selected container                  |
 
 
 ### Dev setup

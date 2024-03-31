@@ -7,7 +7,6 @@ import { FlespiSDK } from "flespi-sdk";
 import React, { ReactElement, useEffect, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
 
-
 export function Device(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource, query } = props;
     const [ devices, setDevices ] = useState<Array<SelectableValue<number>>>([]);
@@ -105,47 +104,47 @@ export function Device(props: QueryEditorProps<DataSource, MyQuery, MyDataSource
     /////////////////////////////////////////////////////////////////////////////////
     return (
         <div className="gf-form">
-          <InlineLabel width={16} tooltip="Choose devices for query">
-            Devices
-          </InlineLabel>
-          <InlineField label="Use dashboard variable">
-            <div className='gf-form-switch'>
-              <Switch
-                value={!!useDeviceVariable}
-                onChange={() => {
-                    setUseDeviceVariable(!useDeviceVariable);
-                  onChange({ ...query, useDeviceVariable: !query.useDeviceVariable });
-                }}
-              />
-            </div>
-          </InlineField>
-          {!useDeviceVariable ? (
-            // if useDeviceVariable==false - render Select with devices for the user to select a device for the query
-            <InlineField>
-              <MultiSelect 
-                value={devicesSelected}
-                options={devices}
-                onChange={onChangeDevicesSelect}
-                width={40}
-                placeholder="Select device"
-              />
+            <InlineLabel width={16} tooltip="Choose devices for query">
+                Devices
+            </InlineLabel>
+            <InlineField label="Use dashboard variable">
+                <div className='gf-form-switch'>
+                    <Switch
+                        value={!!useDeviceVariable}
+                        onChange={() => {
+                            setUseDeviceVariable(!useDeviceVariable);
+                            onChange({ ...query, useDeviceVariable: !query.useDeviceVariable });
+                        }}
+                    />
+                </div>
             </InlineField>
-          ) : (
-            // if useDeviceVariable==true - render Input where user will type name of the variable to take device from
-            <InlineField invalid={error ? true : false} error={error}>
-              <Input
-                name="device"
-                value={deviceVariable}
-                onChange={onDeviceInputChange}
-                onKeyDown={onDeviceInputKeyDown}
-                onBlur={onDeviceInputBlur}
-                required
-                type="text"
-                width={40}
-                placeholder="$device"
-              />
-            </InlineField>
-          )}
+            {!useDeviceVariable ? (
+                // if useDeviceVariable==false - render Select with devices for the user to select a device for the query
+                <InlineField>
+                    <MultiSelect 
+                        value={devicesSelected}
+                        options={devices}
+                        onChange={onChangeDevicesSelect}
+                        width={40}
+                        placeholder="Select device"
+                    />
+                </InlineField>
+            ) : (
+                // if useDeviceVariable==true - render Input where user will type name of the variable to take device from
+                <InlineField invalid={error ? true : false} error={error}>
+                <Input
+                    name="device"
+                    value={deviceVariable}
+                    onChange={onDeviceInputChange}
+                    onKeyDown={onDeviceInputKeyDown}
+                    onBlur={onDeviceInputBlur}
+                    required
+                    type="text"
+                    width={40}
+                    placeholder="$device"
+                />
+                </InlineField>
+            )}
         </div>
-      );
+    );
 }

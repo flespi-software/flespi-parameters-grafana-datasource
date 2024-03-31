@@ -4,17 +4,19 @@ import { MyQuery } from "types";
 export const REGEX_DEVICES = /^(devices\.\*)|(devices\.(\d+)\.parameters\.\*)/;
 export const REGEX_ACCOUNTS = /^(accounts\.\*)|(accounts\.([\d,]+)\.statistics\.\*)/;
 export const VARIABLES_QUERY_STREAMS = 'streams.*';
+export const REGEX_CONTAINERS = /^(containers\.\*)|(containers\.([\d,]+)\.parameters\.\*)/;
 
 export const QUERY_TYPE_DEVICES = 'devices';
 export const QUERY_TYPE_STATISTICS = 'statistics';
 export const QUERY_TYPE_LOGS = 'logs';
+export const QUERY_TYPE_CONTAINERS = 'containers';
 
 export const QUERY_TYPE_OPTIONS: Array<SelectableValue<string>> = [
     { label: 'Devices', value: QUERY_TYPE_DEVICES },
     { label: 'Statistics', value: QUERY_TYPE_STATISTICS },
     { label: 'Logs', value: QUERY_TYPE_LOGS },
     { label: 'Intervals', value: 'intervals' },
-    { label: 'Containers', value: 'containers' },
+    { label: 'Containers', value: QUERY_TYPE_CONTAINERS },
 ];
 
 export const GEN_FUNC_AVERAGE = 'average';

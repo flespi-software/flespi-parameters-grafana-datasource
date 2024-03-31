@@ -24,7 +24,7 @@ export interface MyQuery extends DataQuery {
     useStatParamVariable: boolean;
     statParamsSelected: string[]; 
     statParamVariable: string;    
-    // - // used if queryType === QUERY_TYPE_DEVICES || queryType === QUERY_TYPE_STATISTICS
+    // - // used if queryType === QUERY_TYPE_DEVICES || queryType === QUERY_TYPE_STATISTICS || queryType === QUERY_TYPE_CONTAINERS
     generalizationFunction?: string;   
     // - // the following fields are used if queryType === QUERY_TYPE_LOGS
     logsSourceType: string;                             // source of the logs: device, stream etc
@@ -33,7 +33,14 @@ export interface MyQuery extends DataQuery {
     logsSourceVariable: string;
     useLogsParamVariable: boolean;
     logsParamsSelected: string[];
-    logsParamVariable: string;                
+    logsParamVariable: string;   
+    // - // the following fields are used if queryType === QUERY_TYPE_CONTAINERS             
+    useContainerVariable: boolean;
+    containersSelected: Array<SelectableValue<number>>;
+    containerVariable: string;
+    useContParamVariable: boolean;
+    contParamsSelected: string[];
+    contParamVariable: string;
 }
 
 /**

@@ -4,7 +4,7 @@ import { DataSource, defaultQuery } from "datasource";
 import { MyDataSourceOptions, MyQuery } from "types";
 import { InlineField, Select } from "@grafana/ui";
 import { defaults } from "lodash";
-import { GEN_FUNC_OPTIONS, QUERY_TYPE_DEVICES, QUERY_TYPE_STATISTICS } from "../constants";
+import { GEN_FUNC_OPTIONS, QUERY_TYPE_DEVICES, QUERY_TYPE_STATISTICS, QUERY_TYPE_CONTAINERS } from "../constants";
 
 
 export function GneralizationFunction(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
@@ -17,9 +17,9 @@ export function GneralizationFunction(props: QueryEditorProps<DataSource, MyQuer
     });
 
     /////////////////////////////////////////////////////////////////////////////////
-    // render these controls only for query type QUERY_TYPE_DEVICES
+    // render these controls only for query types devices, statistics and containers
     /////////////////////////////////////////////////////////////////////////////////
-    if (query.queryType !== QUERY_TYPE_DEVICES && query.queryType !== QUERY_TYPE_STATISTICS) {
+    if (query.queryType !== QUERY_TYPE_DEVICES && query.queryType !== QUERY_TYPE_STATISTICS && query.queryType !== QUERY_TYPE_CONTAINERS) {
         return <div/>;
     }
 

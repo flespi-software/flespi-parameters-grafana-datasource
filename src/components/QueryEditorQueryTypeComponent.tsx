@@ -12,7 +12,7 @@ export function QueryType(props: QueryEditorProps<DataSource, MyQuery, MyDataSou
     const defaultedQuery = defaults(query, defaultQuery);
     const [ queryType, setQueryType ] = useState<string>(defaultedQuery.queryType);
 
-    const disabledOptions = ['intervals', 'containers'];
+    const disabledOptions = ['intervals'];
 
     /////////////////////////////////////////////////////////////////////////////////
     // user changed query type switch (radio buttons group)
