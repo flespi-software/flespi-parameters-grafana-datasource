@@ -216,8 +216,8 @@ export class FlespiSDK {
     }
 
     // fetch all flespi containers available for the configured token
-    // GET gw/containers/all
-    // returns array of devices:     
+    // GET storage/containers/all
+    // returns array of containers:     
     // [{"id": 395457, "name": "my container1"}, {"id": 1543533, "name": "my container2"}]
     static async fetchAllFlespiContainers(url: string): Promise<FlespiEntity[]> {
         const observableResponse = getBackendSrv().fetch<FlespiEntytiesResponse>({
@@ -250,7 +250,7 @@ export class FlespiSDK {
         return containerParameters;
     } 
 
-    // fetch message of given device by Id
+    // fetch messages of given container by Id
     // GET storage/containers/messages
     // returns observable fetch response with data
     static fetchFlespiContainersMessages(containerId: string, parameters: string[], url: string, from: number, to: number, genFunction?: string, genInterval?: number): Observable<FetchResponse<DataQueryResponse>> {    
@@ -270,4 +270,18 @@ export class FlespiSDK {
             method: 'GET',
         })
     }
+
+    // fetch all flespi calculators available for the configured token
+    // GET gw/calcs/all
+    // returns array of calculators:     
+    // [{"id": 395457, "name": "my calc1"}, {"id": 1543533, "name": "my calc2"}]
+    static async fetchAllFlespiCalculators(url: string): Promise<FlespiEntity[]> {
+        const observableResponse = getBackendSrv().fetch<FlespiEntytiesResponse>({
+            url: url + this.routePath + '/gw/calcs/all?fields=id%2Cname',
+            method: 'GET',
+        });
+
+        const response = await lastValueFrom(observableResponse);
+        return response.data.result;
+    } 
 }

@@ -30,7 +30,7 @@ export function Container(props: QueryEditorProps<DataSource, MyQuery, MyDataSou
           setContainers(values);
         }
         fetchContainers().catch(console.error);
-      }, [datasource, query]);
+    }, [datasource, query]);
 
     /////////////////////////////////////////////////////////////////////////////////
     // handle changes in selected containers 

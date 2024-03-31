@@ -41,6 +41,8 @@ export interface MyQuery extends DataQuery {
     useContParamVariable: boolean;
     contParamsSelected: string[];
     contParamVariable: string;
+    // - // the following fields are used if queryTypr === QUERY_TYPE_INTERVALS
+    calculatorSelected: SelectableValue<number>;
 }
 
 /**

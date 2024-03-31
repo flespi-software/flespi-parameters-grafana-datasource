@@ -90,7 +90,7 @@ export function Device(props: QueryEditorProps<DataSource, MyQuery, MyDataSource
         onChange({ ...query, devicesSelected: option });
         // execute the query
         onRunQuery();
-  };
+    };
 
     /////////////////////////////////////////////////////////////////////////////////
     // render these controls only for query type QUERY_TYPE_DEVICES

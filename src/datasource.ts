@@ -51,6 +51,8 @@ export const defaultQuery: Partial<MyQuery> = {
     useContParamVariable: false,
     contParamsSelected: [],
     contParamVariable: '',
+    // - // the following fields are used if queryTypr === QUERY_TYPE_INTERVALS
+    calculatorSelected: {},
 };
 
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {

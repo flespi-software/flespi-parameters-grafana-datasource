@@ -10,12 +10,13 @@ export const QUERY_TYPE_DEVICES = 'devices';
 export const QUERY_TYPE_STATISTICS = 'statistics';
 export const QUERY_TYPE_LOGS = 'logs';
 export const QUERY_TYPE_CONTAINERS = 'containers';
+export const QUERY_TYPE_INTERVALS = 'intervals';
 
 export const QUERY_TYPE_OPTIONS: Array<SelectableValue<string>> = [
     { label: 'Devices', value: QUERY_TYPE_DEVICES },
     { label: 'Statistics', value: QUERY_TYPE_STATISTICS },
     { label: 'Logs', value: QUERY_TYPE_LOGS },
-    { label: 'Intervals', value: 'intervals' },
+    { label: 'Intervals', value: QUERY_TYPE_INTERVALS },
     { label: 'Containers', value: QUERY_TYPE_CONTAINERS },
 ];
 
