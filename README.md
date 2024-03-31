@@ -137,3 +137,6 @@ To build and watch the plugin frontend code:
   
 1.1.0
   Added visualization of flespi accounts' statistics
+
+1.2.0 
+  Added visualization of flespi containers' parameters
