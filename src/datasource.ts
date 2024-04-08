@@ -15,7 +15,8 @@ import { MyQuery, MyDataSourceOptions } from './types';
 import { FetchResponse, getTemplateSrv } from '@grafana/runtime';
 import { map } from 'rxjs/operators';
 import { FlespiSDK } from 'flespi-sdk';
-import { REGEX_DEVICES, REGEX_ACCOUNTS, REGEX_CONTAINERS, QUERY_TYPE_DEVICES, QUERY_TYPE_STATISTICS, QUERY_TYPE_CONTAINERS, tempBackwardCompatibilityConversion, LOGS_SOURCE_DEVICE, VARIABLES_QUERY_STREAMS, QUERY_TYPE_LOGS, LOGS_SOURCE_STREAM } from './constants';
+import { REGEX_DEVICES, REGEX_ACCOUNTS, REGEX_CONTAINERS, QUERY_TYPE_DEVICES, QUERY_TYPE_STATISTICS, QUERY_TYPE_CONTAINERS, QUERY_TYPE_INTERVALS, tempBackwardCompatibilityConversion, LOGS_SOURCE_DEVICE, VARIABLES_QUERY_STREAMS, QUERY_TYPE_LOGS, LOGS_SOURCE_STREAM, REGEX_CALCULATORS } from './constants';
+import { decode } from "@googlemaps/polyline-codec";
 
 // default query values
 export const defaultQuery: Partial<MyQuery> = {
@@ -52,7 +53,13 @@ export const defaultQuery: Partial<MyQuery> = {
     contParamsSelected: [],
     contParamVariable: '',
     // - // the following fields are used if queryTypr === QUERY_TYPE_INTERVALS
+    useCalculatorVariable: false,
     calculatorSelected: {},
+    calculatorVariable: '',
+    useCalcDeviceVariable: false,
+    calcDevicesSelected: [],
+    calcDeviceVariable: '',
+    intParamsSelected: [],
 };
 
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
@@ -148,8 +155,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             } else {
                 // this is variable query 'containers.<container_id>.parameters.*'
                 // container id is in the 3 array element of the parsed query
-                const containerId = variableQueryParsed[3];
-                const containerParameters = await FlespiSDK.fetchFlespiContainerParameters(parseInt(containerId, 10), this.url, '');
+                const containerId = parseInt(variableQueryParsed[3], 10);
+                const containerParameters = await FlespiSDK.fetchFlespiContainerParameters(containerId, this.url, '');
                 // transform returned parameters to the required format [{'text': 'param.1'}, {'text':'param.2'}]
                 return containerParameters.map((param) => { 
                     return { text: param };
@@ -157,6 +164,39 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             }
         }
 
+        variableQueryParsed = interpolated.match(REGEX_CALCULATORS);
+        if (variableQueryParsed != null) {
+            if (variableQueryParsed[0] === 'calculators.*') {
+                // this is variable query 'calculators.*' - return all flespi calculators available for the token
+                return (await FlespiSDK.fetchAllFlespiCalculators(this.url)).map(calculator => {
+                    const calculatorName = calculator.name !== '' ? calculator.name.replace(/\./g,'_') : '<noname>';
+                    return {
+                        text: `#${calculator.id} - ${calculatorName}`,
+                        value: calculator.id,
+                    }
+                });
+            } else if (variableQueryParsed[0].endsWith('.devices.*')) {
+                // this is variable query 'calculators.1685993.devices.*' - return devices assigned to calculator
+                const calculatorId = parseInt(variableQueryParsed[3], 10);
+                return (await FlespiSDK.fetchFlespiDevicesAssignedToCalculator(calculatorId, this.url)).map(device => {
+                    const deviceName = device.name !== '' ? device.name.replace(/\./g,'_') : '<noname>';
+                    return {
+                        text: `#${device.id} - ${deviceName}`,
+                        value: device.id,
+                    }
+                });               
+            } else {
+                // this is variable query 'calculators.1685993.devices.5486936.parameters.*' - return intervals' parameters
+                const calculatorId = parseInt(variableQueryParsed[5], 10);
+                const deviceId = parseInt(variableQueryParsed[6], 10);
+                const intervalParams = await FlespiSDK.fetchLastFlespiInterval(calculatorId, deviceId, this.url);
+                // transform returned parameters to the required format [{'text': 'param.1'}, {'text':'param.2'}]
+                return intervalParams.map((param) => { 
+                    return { text: param };
+                });
+            }
+        }
+        
         // wrong variable query
         return Promise.resolve([]);
     }
@@ -176,6 +216,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     // This function is called when you edit query or choose device in variable's selector
     query(options: DataQueryRequest<MyQuery>): Observable<DataQueryResponse> {
+
+        console.log(options);
 
         const observableResponses: Array<Observable<DataQueryResponse>> = options.targets.map((query) => {
 
@@ -356,6 +398,16 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                     });
                     return merge(...containerObservableResponses); 
 
+                case QUERY_TYPE_INTERVALS:
+                    const calcId = query.calculatorSelected.value ? query.calculatorSelected.value : 0;
+                    const deviceId = query.calcDevicesSelected[0].value ? query.calcDevicesSelected[0].value : 0;
+                    console.log("query::intervals::calcId::" + calcId + "::deviceId::" + deviceId + "::");
+                    const observableResponse = FlespiSDK.fetchFlespiIntervals(calcId, deviceId, this.url, from, to)
+                    .pipe(
+                        map((response) => this.handleFetchIntervals(response, query.refId))
+                    )
+                    return observableResponse;
+
                 default:
                     return new Observable<DataQueryResponse>();
             }
@@ -393,6 +445,77 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                 });
             });
         }
+    }
+
+    private handleFetchIntervals(response: FetchResponse, refId: string, labels?: string): DataQueryResponse {
+        console.log("==============handleFetchIntervals()");
+
+        // array to collect timestamps values for data frame, format:
+        // [ 1705074821000, 1705074831000, 1705074841000 ]
+        // const timeValues = [];
+        // const paramValues = [];
+        const latValues = [];
+        const lonValues = [];
+        // const param = 'namo_mileage';
+        const intervals = response.data.result;
+        const intervalsCount = intervals.length;
+        if (intervalsCount === 0) {
+            return { data: [] };
+        }
+        for (let i = 0; i < intervalsCount; i++) {
+            let interval: any = intervals[i];
+            // timeValues.push(interval.begin * 1000);
+            // paramValues.push(interval[param]);
+            // timeValues.push(interval.end * 1000);
+            // paramValues.push(null);
+
+
+
+            const encoded = interval.namo_route;
+            const decodedRoute = decode(encoded, 5);
+
+            for (let ii = 0; ii < decodedRoute.length; ii++) {
+                const point = decodedRoute[ii];
+                latValues.push(point[0]);
+                lonValues.push(point[1]);
+            }
+            // [
+            //   [38.5, -120.2],
+            //   [40.7, -120.95],
+            //   [43.252, -126.453],
+            // ]
+
+            console.log(interval);
+            break;
+        }
+
+        // Now create a data frame from collected values
+        // const frame = new MutableDataFrame({
+        //     refId: refId,
+        //     fields: [
+        //         { name: 'Time', type: FieldType.time, values: timeValues },
+        //     ],
+        // });
+        const frame = new MutableDataFrame({
+            refId: refId,
+            fields: [
+                { name: 'lat', type: FieldType.number, values: latValues },
+            ],
+        });
+        // frame.addField({
+        //     name: 'lat',
+        //     type: FieldType.number,
+        //     values: latValues,
+        //     labels: (labels !== undefined) ? {item: `[${labels}]`} : undefined,
+        // });
+        frame.addField({
+            name: 'lon',
+            type: FieldType.number,
+            values: lonValues,
+            labels: (labels !== undefined) ? {item: `[${labels}]`} : undefined,
+        });
+
+        return { data: [frame] };
     }
 
     private handleFetchDataQueryResponse(response: FetchResponse, refId: string, labels?: string): DataQueryResponse {

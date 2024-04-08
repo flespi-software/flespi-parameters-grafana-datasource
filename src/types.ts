@@ -41,8 +41,14 @@ export interface MyQuery extends DataQuery {
     useContParamVariable: boolean;
     contParamsSelected: string[];
     contParamVariable: string;
-    // - // the following fields are used if queryTypr === QUERY_TYPE_INTERVALS
+    // - // the following fields are used if queryType === QUERY_TYPE_INTERVALS
+    useCalculatorVariable: boolean;
     calculatorSelected: SelectableValue<number>;
+    calculatorVariable: string;
+    useCalcDeviceVariable: boolean;
+    calcDevicesSelected: Array<SelectableValue<number>>;
+    calcDeviceVariable: string;
+    intParamsSelected: string[];
 }
 
 /**

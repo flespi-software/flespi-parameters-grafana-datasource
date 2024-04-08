@@ -15,6 +15,8 @@ import { LogParameter } from "./QueryEditorLogParamComponent";
 import { Container } from "./QueryEditorContainerComponent";
 import { ContainerParameter } from "./QueryEditorContParamComponent";
 import { Calculator } from "./QueryEditorCalculatorComponent";
+import { CalcDevice } from "./QueryEditorCalcDeviceComponent";
+import { IntervalParameter } from "./QueryEditorIntParamComponent";
 
 export function QueryEditor(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource, query } = props;
@@ -38,6 +40,8 @@ export function QueryEditor(props: QueryEditorProps<DataSource, MyQuery, MyDataS
             <LogsSource datasource={datasource} query={query} onRunQuery={onRunQuery} onChange={onChange} />
             <LogParameter datasource={datasource} query={query} onRunQuery={onRunQuery} onChange={onChange} />
             <Calculator datasource={datasource} query={query} onRunQuery={onRunQuery} onChange={onChange} />
+            <CalcDevice datasource={datasource} query={query} onRunQuery={onRunQuery} onChange={onChange} />
+            <IntervalParameter datasource={datasource} query={query} onRunQuery={onRunQuery} onChange={onChange} />
         </>
     );
 }

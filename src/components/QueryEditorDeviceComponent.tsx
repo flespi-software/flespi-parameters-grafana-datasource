@@ -21,13 +21,8 @@ export function Device(props: QueryEditorProps<DataSource, MyQuery, MyDataSource
     useEffect(() => {
         // load devices and store them into state for the later use in devices drop-down
         const fetchDevices = async () => {
-          const values = (await FlespiSDK.fetchAllFlespiDevices(datasource.url)).map(device => {
-            return {
-              label: device.name,
-              value: device.id,
-            }
-          });
-          setDevices(values);
+            const values = (await FlespiSDK.fetchAllFlespiDevices(datasource.url)).map((device) => { return { label: device.name, value: device.id } });
+            setDevices(values);
         }
         fetchDevices().catch(console.error);
       }, [datasource, query]);
@@ -45,7 +40,7 @@ export function Device(props: QueryEditorProps<DataSource, MyQuery, MyDataSource
     const onDeviceInputKeyDown = (event: any) => {
         // process 'Enter' key down event only
         if (event.key !== 'Enter') {
-          return;
+            return;
         }
         processDeviceVariableInput(event.target.value);
     }
@@ -62,23 +57,23 @@ export function Device(props: QueryEditorProps<DataSource, MyQuery, MyDataSource
     const processDeviceVariableInput = (inputValue: string) => {
         // device variable input field is empty
         if (inputValue === '') {
-          // nothing to do, just remove error message, if any
-          setError("");
-          return;
+            // nothing to do, just remove error message, if any
+            setError("");
+            return;
         }
         // check user input, if this is a valid dashboard variable
         const interpolations: any[] = [];
         getTemplateSrv().replace(inputValue, undefined, undefined, interpolations);
         if (interpolations[0] && interpolations[0].found === true) {
-          // matching dashboard variable is found
-          setDeviceVariable(inputValue);
-          setError("");
-          // set new device variable to the query and run query() to render the graph
-          onChange({ ...query, deviceVariable: inputValue });
-          onRunQuery();
+            // matching dashboard variable is found
+            setDeviceVariable(inputValue);
+            setError("");
+            // set new device variable to the query and run query() to render the graph
+            onChange({ ...query, deviceVariable: inputValue });
+            onRunQuery();
         } else {
-          // no matching dashboard variable has been found, display error message
-          setError(`Invalid device variable: no variable ${inputValue} is defined for the dashboard`);
+            // no matching dashboard variable has been found, display error message
+            setError(`Invalid device variable: no variable ${inputValue} is defined for the dashboard`);
         }
       }
 

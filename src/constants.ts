@@ -1,10 +1,11 @@
 import { SelectableValue } from "@grafana/data";
 import { MyQuery } from "types";
 
-export const REGEX_DEVICES = /^(devices\.\*)|(devices\.(\d+)\.parameters\.\*)/;
+export const REGEX_DEVICES = /^(devices\.\*)|^(devices\.(\d+)\.parameters\.\*)/;
 export const REGEX_ACCOUNTS = /^(accounts\.\*)|(accounts\.([\d,]+)\.statistics\.\*)/;
 export const VARIABLES_QUERY_STREAMS = 'streams.*';
 export const REGEX_CONTAINERS = /^(containers\.\*)|(containers\.([\d,]+)\.parameters\.\*)/;
+export const REGEX_CALCULATORS = /^(calculators\.\*)|(calculators\.([\d,]+)\.devices\.\*)|(calculators\.([\d,]+)\.devices\.([\d,]+).parameters\.\*)/;
 
 export const QUERY_TYPE_DEVICES = 'devices';
 export const QUERY_TYPE_STATISTICS = 'statistics';

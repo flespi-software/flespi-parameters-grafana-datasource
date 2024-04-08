@@ -21,6 +21,17 @@ export interface FlespiCustomerStatistics {
     [key: string]: any,
 }
 
+export interface FlespiAnalyticsIntervalsResponse {
+    result: FlespiAnalyticsInterval[],
+}
+
+export interface FlespiAnalyticsInterval {
+    begin: number,
+    end: number,
+    id: number,
+    [key: string]: any,
+}
+
 // interfaces are used in metricFindQuery function
 // for 'devices.*' query - that is resolved into request /gw/devices/all
 interface FlespiEntytiesResponse {
@@ -283,5 +294,48 @@ export class FlespiSDK {
 
         const response = await lastValueFrom(observableResponse);
         return response.data.result;
+    }
+
+    // fethc flespi devices assigned to calculator by Id
+    // GET gw/devices/calcs.id=<CALC_ID>
+    // returns arrau of devices assigned to the given calculator:
+    // [{"id": 395457, "name": "my calcdevice1"}, {"id": 1543533, "name": "my calcdevice2"}]
+    static async fetchFlespiDevicesAssignedToCalculator(calcId: number, url: string): Promise<FlespiEntity[]> {
+        const observableResponse = getBackendSrv().fetch<FlespiEntytiesResponse>({
+            url: url + this.routePath + `/gw/devices/calcs.id=${calcId}?fields=id%2Cname`,
+            method: 'GET',
+        });
+
+        const response = await lastValueFrom(observableResponse);
+        return response.data.result;
+    }
+
+    // returns JS array of parameters' names
+    static async fetchLastFlespiInterval(calcId: number, deviceId: number, url: string): Promise<string[]> {
+        const observableResponse =  getBackendSrv().fetch<FlespiAnalyticsIntervalsResponse>({
+            url: url + this.routePath + `/gw/calcs/${calcId}/devices/${deviceId}/intervals/last`,
+            method: 'GET',
+        });
+        const response = await lastValueFrom(observableResponse);
+        console.log(response);
+        const params = response.data.result[0];
+        if (params === null) {
+            return Promise.resolve([]);
+        }
+        const containerParameters: string[] = [];
+        Object.keys(params).map(param => {
+            containerParameters.push(param);
+        });
+        
+        return containerParameters;    
+    }
+
+    // returns observable fetch response with data
+    static fetchFlespiIntervals(calcId: number, deviceId: number, url: string, from: number, to: number): Observable<FetchResponse<FlespiAnalyticsIntervalsResponse>> {
+        const requestParameters = `{"begin":${from},"end":${to}}`;
+        return getBackendSrv().fetch<FlespiAnalyticsIntervalsResponse>({
+            url: url + this.routePath + `/gw/calcs/${calcId}/devices/${deviceId}/intervals/all?data=${requestParameters}`,
+            method: 'GET',
+        });
     } 
 }
