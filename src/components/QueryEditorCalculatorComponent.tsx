@@ -5,7 +5,7 @@ import { MyDataSourceOptions, MyQuery } from "types";
 import { InlineLabel, InlineField, Select, Switch, Input } from "@grafana/ui";
 import { QUERY_TYPE_INTERVALS } from "../constants";
 import { FlespiSDK } from "flespi-sdk";
-import { getTemplateSrv } from "@grafana/runtime";
+import { processVariableInput } from "utils";
 
 export function Calculator(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource, query } = props;
@@ -19,67 +19,12 @@ export function Calculator(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
     // load all available calculators for future use as select options
     /////////////////////////////////////////////////////////////////////////////////
     useEffect(() => {
-        // load calculators and store them into state for the later use in drop-down
         const fetchCalculators = async () => {
-          const values = (await FlespiSDK.fetchAllFlespiCalculators(datasource.url)).map(calculator => {
-            return {
-                label: calculator.name,
-                value: calculator.id,
-            }
-          });
+          const values = (await FlespiSDK.fetchAllFlespiCalculators(datasource.url)).map(calculator => ({label: calculator.name, value: calculator.id}));
           setCalculators(values);
         }
         fetchCalculators().catch(console.error);
     }, [datasource, query]);
-
-    // handle changes in selected calculator 
-    const onChangeCalculatorSelect = (option: SelectableValue<number>) => {
-        // update selected calcualtor in the form state
-        setCalculatorSelected(option);
-        // save new parameter to query
-        onChange({ ...query, calculatorSelected: option });
-        // execute the query
-        onRunQuery();
-    };
-
-    const onCalculatorInputChange = (event: any) => {
-        // just update the value displayed in the input field
-        setCalculatorVariable(event.target.value);
-    }
-
-    const onCalculatorInputKeyDown = (event: any) => {
-        // process 'Enter' key down event only
-        if (event.key !== 'Enter') {
-          return;
-        }
-        processCalculatorVariableInput(event.target.value);
-    }
-
-    const onCalculatorInputBlur = (event: any) => {
-        processCalculatorVariableInput(event.target.value);
-    }
-
-    const processCalculatorVariableInput = (inputValue: string) => {
-        if (inputValue === '') {
-          // nothing to do, just remove error message, if any
-          setError("");
-          return;
-        }
-        // check user input, if this is a valid dashboard variable
-        const interpolations: any[] = [];
-        getTemplateSrv().replace(inputValue, undefined, undefined, interpolations);
-        if (interpolations[0] && interpolations[0].found === true) {
-          // matching dashboard variable is found
-          setCalculatorVariable(inputValue);
-          setError("");
-          onChange({ ...query, calculatorVariable: inputValue });
-          onRunQuery();
-        } else {
-          // no matching dashboard variable has been found, display error message
-          setError(`Invalid calculator variable: no variable ${inputValue} is defined for the dashboard`);
-        }
-      }
-
 
     /////////////////////////////////////////////////////////////////////////////////
     // render these controls only for query type QUERY_TYPE_INTERVALS
@@ -114,7 +59,11 @@ export function Calculator(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
                         value={calculatorSelected}
                         options={calculators}
                         width={40}
-                        onChange={onChangeCalculatorSelect}
+                        onChange={(option: SelectableValue<number>) => {
+                            setCalculatorSelected(option);
+                            onChange({ ...query, calculatorSelected: option });
+                            onRunQuery();
+                        }}
                     />
                 </InlineField>
             ) : (
@@ -122,9 +71,19 @@ export function Calculator(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
                 <Input
                     name="calculator"
                     value={calculatorVariable}
-                    onChange={onCalculatorInputChange}
-                    onKeyDown={onCalculatorInputKeyDown}
-                    onBlur={onCalculatorInputBlur}
+                    onChange={(event: any) => {
+                        setCalculatorVariable(event.target.value);
+                    }}
+                    onKeyDown={(event: any) => {
+                        // process 'Enter' key down event only
+                        if (event.key !== 'Enter') {
+                            return;
+                        }
+                        processVariableInput(event.target.value, query, 'calculatorVariable', setCalculatorVariable, setError, onChange, onRunQuery);
+                    }}
+                    onBlur={(event: any) => {
+                        processVariableInput(event.target.value, query, 'calculatorVariable', setCalculatorVariable, setError, onChange, onRunQuery);
+                    }}
                     required
                     type="text"
                     width={40}

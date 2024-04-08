@@ -1,11 +1,11 @@
 import { QueryEditorProps, SelectableValue } from "@grafana/data";
-import { getTemplateSrv } from "@grafana/runtime";
 import { InlineField, InlineLabel, Input, MultiSelect, Switch } from "@grafana/ui";
 import { QUERY_TYPE_DEVICES } from "../constants";
 import { DataSource } from "datasource";
 import { FlespiSDK } from "flespi-sdk";
 import React, { ReactElement, useEffect, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
+import { processVariableInput } from "utils";
 
 export function Device(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource, query } = props;
@@ -21,71 +21,11 @@ export function Device(props: QueryEditorProps<DataSource, MyQuery, MyDataSource
     useEffect(() => {
         // load devices and store them into state for the later use in devices drop-down
         const fetchDevices = async () => {
-            const values = (await FlespiSDK.fetchAllFlespiDevices(datasource.url)).map((device) => { return { label: device.name, value: device.id } });
+            const values = (await FlespiSDK.fetchAllFlespiDevices(datasource.url)).map((device) => ({label: device.name, value: device.id}));
             setDevices(values);
         }
         fetchDevices().catch(console.error);
       }, [datasource, query]);
-
-    /////////////////////////////////////////////////////////////////////////////////
-    // device input event handler: text typed
-    /////////////////////////////////////////////////////////////////////////////////
-    const onDeviceInputChange = (event: any) => {
-        // just update the value displayed in the input field
-        setDeviceVariable(event.target.value);
-    }
-    /////////////////////////////////////////////////////////////////////////////////
-    // device input event hander: key down
-    /////////////////////////////////////////////////////////////////////////////////
-    const onDeviceInputKeyDown = (event: any) => {
-        // process 'Enter' key down event only
-        if (event.key !== 'Enter') {
-            return;
-        }
-        processDeviceVariableInput(event.target.value);
-    }
-    /////////////////////////////////////////////////////////////////////////////////
-    // device input hander: focus lost
-    /////////////////////////////////////////////////////////////////////////////////
-    const onDeviceInputBlur = (event: any) => {
-        processDeviceVariableInput(event.target.value);
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////
-    // device input hander: user types variable name into input
-    /////////////////////////////////////////////////////////////////////////////////
-    const processDeviceVariableInput = (inputValue: string) => {
-        // device variable input field is empty
-        if (inputValue === '') {
-            // nothing to do, just remove error message, if any
-            setError("");
-            return;
-        }
-        // check user input, if this is a valid dashboard variable
-        const interpolations: any[] = [];
-        getTemplateSrv().replace(inputValue, undefined, undefined, interpolations);
-        if (interpolations[0] && interpolations[0].found === true) {
-            // matching dashboard variable is found
-            setDeviceVariable(inputValue);
-            setError("");
-            // set new device variable to the query and run query() to render the graph
-            onChange({ ...query, deviceVariable: inputValue });
-            onRunQuery();
-        } else {
-            // no matching dashboard variable has been found, display error message
-            setError(`Invalid device variable: no variable ${inputValue} is defined for the dashboard`);
-        }
-      }
-
-    // handle changes in selected devices 
-    const onChangeDevicesSelect = (option: Array<SelectableValue<number>>) => {
-        // update selected devices in the form state
-        setDevicesSelected(option);
-        // save new parameter to query
-        onChange({ ...query, devicesSelected: option });
-        // execute the query
-        onRunQuery();
-    };
 
     /////////////////////////////////////////////////////////////////////////////////
     // render these controls only for query type QUERY_TYPE_DEVICES
@@ -119,7 +59,11 @@ export function Device(props: QueryEditorProps<DataSource, MyQuery, MyDataSource
                     <MultiSelect 
                         value={devicesSelected}
                         options={devices}
-                        onChange={onChangeDevicesSelect}
+                        onChange={(option: Array<SelectableValue<number>>) => {
+                            setDevicesSelected(option);
+                            onChange({ ...query, devicesSelected: option });
+                            onRunQuery();
+                        }}
                         width={40}
                         placeholder="Select device"
                     />
@@ -130,9 +74,19 @@ export function Device(props: QueryEditorProps<DataSource, MyQuery, MyDataSource
                 <Input
                     name="device"
                     value={deviceVariable}
-                    onChange={onDeviceInputChange}
-                    onKeyDown={onDeviceInputKeyDown}
-                    onBlur={onDeviceInputBlur}
+                    onChange={(event: any) => {
+                        setDeviceVariable(event.target.value);
+                    }}
+                    onKeyDown={(event: any) => {
+                        // process 'Enter' key down event only
+                        if (event.key !== 'Enter') {
+                            return;
+                        }
+                        processVariableInput(event.target.value, query, 'deviceVariable', setDeviceVariable, setError, onChange, onRunQuery);
+                    }}
+                    onBlur={(event: any) => {
+                        processVariableInput(event.target.value, query, 'deviceVariable', setDeviceVariable, setError, onChange, onRunQuery);
+                    }}
                     required
                     type="text"
                     width={40}

@@ -4,8 +4,8 @@ import { LOGS_SOURCE_DEVICE, LOGS_SOURCE_STREAM, QUERY_TYPE_LOGS } from "../cons
 import { DataSource } from "datasource";
 import React, { ReactElement, useEffect, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
-import { getTemplateSrv } from "@grafana/runtime";
 import { FlespiSDK } from "flespi-sdk";
+import { processVariableInput } from "utils";
 
 export function LogsSource(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource, query } = props;
@@ -19,89 +19,18 @@ export function LogsSource(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
     // load all available logs sources for future use as select options
     /////////////////////////////////////////////////////////////////////////////////
     useEffect(() => {
-        // load logs sources and store them into state for the later use in drop-downs
         const fetchLogsSources = async () => {
             let values
             if (query.logsSourceType === LOGS_SOURCE_DEVICE) {
-                values = (await FlespiSDK.fetchAllFlespiDevices(datasource.url)).map(device => {
-                    return {
-                        label: device.name,
-                        value: device.id,
-                    }
-                });
+                values = (await FlespiSDK.fetchAllFlespiDevices(datasource.url)).map(device => ({label: device.name, value: device.id}));
             } else {
                 // query.logsSourceType === LOGS_SOURCE_STREAM
-                values = (await FlespiSDK.fetchAllFlespiStreams(datasource.url)).map(stream => {
-                    return {
-                        label: stream.name,
-                        value: stream.id,
-                    }
-                });
+                values = (await FlespiSDK.fetchAllFlespiStreams(datasource.url)).map(stream => ({label: stream.name, value: stream.id}));
             }
             setLogsSources(values);
         }
         fetchLogsSources().catch(console.error);
     }, [datasource, query]);
-
-    /////////////////////////////////////////////////////////////////////////////////
-    // log source input event handler: text typed
-    /////////////////////////////////////////////////////////////////////////////////
-    const onLogsSourcesInputChange = (event: any) => {
-        // just update the value displayed in the input field
-        setLogsSourceVariable(event.target.value);
-    }
-    /////////////////////////////////////////////////////////////////////////////////
-    // logs source input event hander: key down
-    /////////////////////////////////////////////////////////////////////////////////
-    const onLogsSourcesInputKeyDown = (event: any) => {
-        // process 'Enter' key down event only
-        if (event.key !== 'Enter') {
-          return;
-        }
-        processLogsSourcesVariableInput(event.target.value);
-    }
-    /////////////////////////////////////////////////////////////////////////////////
-    // logs source input hander: focus lost
-    /////////////////////////////////////////////////////////////////////////////////
-    const onLogsSourcesInputBlur = (event: any) => {
-        processLogsSourcesVariableInput(event.target.value);
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////
-    // logs sources input hander: user types variable name into input
-    /////////////////////////////////////////////////////////////////////////////////
-    const processLogsSourcesVariableInput = (inputValue: string) => {
-        // logs source variable input field is empty
-        if (inputValue === '') {
-          // nothing to do, just remove error message, if any
-          setError("");
-          return;
-        }
-        // check user input, if this is a valid dashboard variable
-        const interpolations: any[] = [];
-        getTemplateSrv().replace(inputValue, undefined, undefined, interpolations);
-        if (interpolations[0] && interpolations[0].found === true) {
-          // matching dashboard variable is found
-          setLogsSourceVariable(inputValue);
-          setError("");
-          // set new logs source variable to the query and run query() to render the graph
-          onChange({ ...query, logsSourceVariable: inputValue });
-          onRunQuery();
-        } else {
-          // no matching dashboard variable has been found, display error message
-          setError(`Invalid logs source variable: no variable ${inputValue} is defined for the dashboard`);
-        }
-      }
-
-    // handle changes in selected logs sources 
-    const onChangeLogsSourcesSelect = (option: Array<SelectableValue<number>>) => {
-        // update selected logs sources in the form state
-        setLogsSourcesSelected(option);
-        // save new logs souces to query
-        onChange({ ...query, logsSourcesSelected: option });
-        // execute the query
-        onRunQuery();
-  };
 
     /////////////////////////////////////////////////////////////////////////////////
     // render these controls only for query type QUERY_TYPE_LOGS
@@ -150,7 +79,11 @@ export function LogsSource(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
               <MultiSelect 
                 value={logsSourcesSelected}
                 options={logsSources}
-                onChange={onChangeLogsSourcesSelect}
+                onChange={(option: Array<SelectableValue<number>>) => {
+                    setLogsSourcesSelected(option);
+                    onChange({ ...query, logsSourcesSelected: option });
+                    onRunQuery();
+                }}
                 width={40}
                 placeholder={placeholderSelect}
               />
@@ -161,9 +94,19 @@ export function LogsSource(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
               <Input
                 name="logsSource"
                 value={logsSourceVariable}
-                onChange={onLogsSourcesInputChange}
-                onKeyDown={onLogsSourcesInputKeyDown}
-                onBlur={onLogsSourcesInputBlur}
+                onChange={(event: any) => {
+                    setLogsSourceVariable(event.target.value);
+                }}
+                onKeyDown={(event: any) => {
+                    // process 'Enter' key down event only
+                    if (event.key !== 'Enter') {
+                        return;
+                    }
+                    processVariableInput(event.target.value, query, 'logsSourceVariable', setLogsSourceVariable, setError, onChange, onRunQuery);
+                }}
+                onBlur={(event: any) => {
+                    processVariableInput(event.target.value, query, 'logsSourceVariable', setLogsSourceVariable, setError, onChange, onRunQuery);
+                }}
                 required
                 type="text"
                 width={40}
