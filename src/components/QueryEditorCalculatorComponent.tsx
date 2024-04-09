@@ -2,14 +2,14 @@ import { QueryEditorProps, SelectableValue } from "@grafana/data";
 import { DataSource } from "datasource";
 import React, { ReactElement, useState, useEffect } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
-import { InlineLabel, InlineField, Select, Switch, Input } from "@grafana/ui";
+import { InlineLabel, InlineField, Switch, Input, MultiSelect } from "@grafana/ui";
 import { QUERY_TYPE_INTERVALS } from "../constants";
 import { FlespiSDK } from "flespi-sdk";
 import { processVariableInput } from "utils";
 
 export function Calculator(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource, query } = props;
-    const [ calculatorSelected, setCalculatorSelected ] = useState<SelectableValue<number>>(query.calculatorSelected);
+    const [ calculatorsSelected, setCalculatorsSelected ] = useState<Array<SelectableValue<number>>>(query.calculatorsSelected);
     const [ calculators, setCalculators ] = useState<Array<SelectableValue<number>>>([]);
     const [ useCalculatorVariable, setUseCalculatorVariable ] = useState<boolean>(query.useCalculatorVariable);
     const [ calculatorVariable, setCalculatorVariable ] = useState<string>(query.calculatorVariable);
@@ -54,14 +54,14 @@ export function Calculator(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
             </InlineField>
             {!useCalculatorVariable ? (
                 <InlineField>
-                    <Select
+                    <MultiSelect
                         placeholder="Select calculator"
-                        value={calculatorSelected}
+                        value={calculatorsSelected}
                         options={calculators}
                         width={40}
-                        onChange={(option: SelectableValue<number>) => {
-                            setCalculatorSelected(option);
-                            onChange({ ...query, calculatorSelected: option });
+                        onChange={(option: Array<SelectableValue<number>>) => {
+                            setCalculatorsSelected(option);
+                            onChange({ ...query, calculatorsSelected: option });
                             onRunQuery();
                         }}
                     />

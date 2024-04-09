@@ -17,8 +17,8 @@ export function IntervalParameter(props: QueryEditorProps<DataSource, MyQuery, M
     });
 
     const devicesSelected = query.calcDevicesSelected;
-    const calcSelected = query.calculatorSelected.value ? query.calculatorSelected.value : 0;
-    const deviceSelected = devicesSelected[0].value ? devicesSelected[0].value : 0;
+    const calcSelected = (query.calculatorsSelected[0] && query.calculatorsSelected[0].value) ? query.calculatorsSelected[0].value : 0;
+    const deviceSelected = (devicesSelected[0] && devicesSelected[0].value) ? devicesSelected[0].value : 0;
     const devices = devicesSelected.map((device: SelectableValue<number>) => device.value).join();
 
     // load statistics parameters for the accounts selected in Accounts drop down
@@ -52,7 +52,7 @@ export function IntervalParameter(props: QueryEditorProps<DataSource, MyQuery, M
             <InlineLabel width={16} tooltip="Choose interval parameters for query">
                 Parameters
             </InlineLabel>
-            <InlineField labelWidth={16}>
+            <InlineField labelWidth={16} disabled={deviceSelected === 0}>
                 <AsyncMultiSelect
                     key={devices}
                     value={intParamsSelected}
@@ -67,6 +67,7 @@ export function IntervalParameter(props: QueryEditorProps<DataSource, MyQuery, M
                     width={40}
                     noOptionsMessage="Telemetry not found"
                     allowCustomValue={true}
+                    placeholder=''
                 />
             </InlineField>
         </div>

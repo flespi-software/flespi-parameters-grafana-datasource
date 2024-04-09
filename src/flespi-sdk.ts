@@ -34,11 +34,11 @@ export interface FlespiAnalyticsInterval {
 
 // interfaces are used in metricFindQuery function
 // for 'devices.*' query - that is resolved into request /gw/devices/all
-interface FlespiEntytiesResponse {
+export interface FlespiEntytiesResponse {
     result: FlespiEntity[],
 }
 
-interface FlespiEntity {
+export interface FlespiEntity {
     id: number,
     name: string,
 }
