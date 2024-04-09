@@ -17,12 +17,7 @@ export function TelemetryParameter(props: QueryEditorProps<DataSource, MyQuery, 
     const [ telemParamVariable, setTelemParamVariable ] = useState<string>(query.telemParamVariable);
     const [ telemParamsSelected, setTelemParamsSelected ] = useState<Array<SelectableValue<string>>>(() => {
         if (query.telemParamsSelected) {
-            return query.telemParamsSelected.map((parameter) => {
-                return {
-                    label: parameter,
-                    value: parameter,
-                };
-            });
+            return query.statParamsSelected.map((parameter: string) => ({label: parameter, value: parameter}));
         }
         return [];
     });

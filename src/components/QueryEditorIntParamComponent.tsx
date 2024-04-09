@@ -11,12 +11,7 @@ export function IntervalParameter(props: QueryEditorProps<DataSource, MyQuery, M
     const { onChange, onRunQuery, datasource, query } = props;
     const [ intParamsSelected, setIntParamsSelected ] = useState<Array<SelectableValue<string>>>(() => {
         if (query.intParamsSelected) {
-            return query.intParamsSelected.map((parameter) => {
-                return {
-                    label: parameter,
-                    value: parameter,
-                };
-            });
+            return query.intParamsSelected.map((parameter: string) => ({label: parameter, value: parameter}));
         }
         return [];
     });

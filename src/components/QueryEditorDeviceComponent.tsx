@@ -21,7 +21,7 @@ export function Device(props: QueryEditorProps<DataSource, MyQuery, MyDataSource
     useEffect(() => {
         // load devices and store them into state for the later use in devices drop-down
         const fetchDevices = async () => {
-            const values = (await FlespiSDK.fetchAllFlespiDevices(datasource.url)).map((device) => ({label: device.name, value: device.id}));
+            const values = (await FlespiSDK.fetchAllFlespiDevices(datasource.url)).map(device => ({label: device.name, value: device.id}));
             setDevices(values);
         }
         fetchDevices().catch(console.error);

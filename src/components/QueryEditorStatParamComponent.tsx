@@ -16,12 +16,7 @@ export function StatisticsParameter(props: QueryEditorProps<DataSource, MyQuery,
     const [ statParamVariable, setStatParamVariable ] = useState<string>(query.statParamVariable);
     const [ statParamsSelected, setStatParamsSelected ] = useState<Array<SelectableValue<string>>>(() => {
         if (query.statParamsSelected) {
-            return query.statParamsSelected.map((parameter) => {
-                return {
-                    label: parameter,
-                    value: parameter,
-                };
-            });
+            return query.statParamsSelected.map((parameter: string) => ({label: parameter, value: parameter}));
         }
         return [];
     });

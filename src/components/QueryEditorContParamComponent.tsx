@@ -17,12 +17,7 @@ export function ContainerParameter(props: QueryEditorProps<DataSource, MyQuery, 
     const [ contParamVariable, setContParamVariable ] = useState<string>(query.contParamVariable);
     const [ contParamsSelected, setContParamsSelected ] = useState<Array<SelectableValue<string>>>(() => {
         if (query.contParamsSelected) {
-            return query.contParamsSelected.map((parameter) => {
-                return {
-                    label: parameter,
-                    value: parameter,
-                };
-            });
+            return query.contParamsSelected.map((parameter: string) => ({label: parameter, value: parameter}));
         }
         return [];
     });
@@ -49,7 +44,7 @@ export function ContainerParameter(props: QueryEditorProps<DataSource, MyQuery, 
 
         return Array.from(containersParametersUnique.values())
             .sort()
-            .map((parameter: string) => ({ value: parameter, label: parameter }));
+            .map((parameter: string) => ({value: parameter, label: parameter}));
     };
 
     /////////////////////////////////////////////////////////////////////////////////
