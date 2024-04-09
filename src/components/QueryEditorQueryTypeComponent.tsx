@@ -13,16 +13,6 @@ export function QueryType(props: QueryEditorProps<DataSource, MyQuery, MyDataSou
     const [ queryType, setQueryType ] = useState<string>(defaultedQuery.queryType);
 
     /////////////////////////////////////////////////////////////////////////////////
-    // user changed query type switch (radio buttons group)
-    /////////////////////////////////////////////////////////////////////////////////
-    const onQueryTypeChange = (event: any) => {
-        // update component state
-        setQueryType(event);
-        // update query
-        onChange({ ...query, queryType: event });
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////
     // render Query Type element: radio buttons group 
     /////////////////////////////////////////////////////////////////////////////////
     return (
@@ -31,7 +21,10 @@ export function QueryType(props: QueryEditorProps<DataSource, MyQuery, MyDataSou
             <RadioButtonGroup 
                 options={QUERY_TYPE_OPTIONS}
                 value={queryType} 
-                onChange={onQueryTypeChange} />
+                onChange={(event: any) => {
+                setQueryType(event);
+                onChange({ ...query, queryType: event });
+                }} />
           </InlineField>
         </div>
       );

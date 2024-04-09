@@ -5,8 +5,7 @@ import { DataSource, defaultQuery } from "datasource";
 import { defaults } from "lodash";
 import React, { ReactElement, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
-import { getTemplateSrv } from "@grafana/runtime";
-
+import { processVariableInput } from "utils";
 
 export function LogParameter(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery } = props;
@@ -16,67 +15,11 @@ export function LogParameter(props: QueryEditorProps<DataSource, MyQuery, MyData
     const [ logsParamVariable, setLogsParamVariable ] = useState<string>(query.logsParamVariable);
     const [ logsParamsSelected, setLogsParamsSelected ] = useState<Array<SelectableValue<string>>>(() => {
         if (query.logsParamsSelected) {
-            return query.logsParamsSelected.map((parameter) => {
-                return {
-                    label: parameter,
-                    value: parameter,
-                };
-            });
+            return query.logsParamsSelected.map(parameter => ({label: parameter, value: parameter}));
         }
         return [];
     });
     const [ error, setError ] = useState<string>("");
-
-    // handle changes in selected parameter 
-    const onChangeParametersSelect = (option: any) => {
-        // update form state
-        setLogsParamsSelected(option);
-        // save new parameter to query
-        onChange({ ...query, logsParamsSelected: option.map((param: SelectableValue<string>) => { return param.value!; }) });
-        // execute the query
-        onRunQuery();
-    };
-
-    const onParameterInputChange = (event: any) => {
-        // save updated container variable to query
-        setLogsParamVariable(event.target.value);
-        onChange({ ...query, logsParamVariable: event.target.value });
-      }
-    
-    const onParameterInputKeyDown = (event: any) => {
-        if (event.key !== 'Enter') {
-            return;
-        }
-        onRunQuery();
-        processVariableInput(event.target.value);
-    }
-    
-    const onParameterInputBlur = (event: any) => {
-        processVariableInput(event.target.value);
-    }
-
-    const processVariableInput = (inputValue: string) => {
-        // variable input field is empty
-        if (inputValue === '') {
-            // nothing to do, just remove error message, if any
-            setError("");
-            return;
-        }
-        // check user input, if this is a valid dashboard variable
-        const interpolations: any[] = [];
-        getTemplateSrv().replace(inputValue, undefined, undefined, interpolations);
-        if (interpolations[0] && interpolations[0].found === true) {
-            // matching dashboard variable is found
-            setLogsParamVariable(inputValue);
-            setError("");
-            // set new variable to the query and run query() to render the graph
-            onChange({ ...query, logsParamVariable: inputValue });
-            onRunQuery();
-        } else {
-            // no matching dashboard variable has been found, display error message
-            setError(`Invalid variable: no variable ${inputValue} is defined for the dashboard`);
-        }
-    }
 
     /////////////////////////////////////////////////////////////////////////////////
     // render these controls only for query type QUERY_TYPE_LOGS
@@ -118,7 +61,11 @@ export function LogParameter(props: QueryEditorProps<DataSource, MyQuery, MyData
                 <MultiSelect
                     value={logsParamsSelected}
                     options={options}
-                    onChange={onChangeParametersSelect}
+                    onChange={(option: any) => {
+                        setLogsParamsSelected(option);
+                        onChange({ ...query, logsParamsSelected: option.map((param: SelectableValue<string>) => (param.value!)) });
+                        onRunQuery();
+                    }}
                     width={40}
                     allowCustomValue={true}
                 />
@@ -128,9 +75,20 @@ export function LogParameter(props: QueryEditorProps<DataSource, MyQuery, MyData
                 <Input
                     name="parameter"
                     value={logsParamVariable}
-                    onChange={onParameterInputChange}
-                    onKeyDown={onParameterInputKeyDown}
-                    onBlur={onParameterInputBlur}
+                    onChange={(event: any) => {
+                        setLogsParamVariable(event.target.value);
+                        onChange({ ...query, logsParamVariable: event.target.value });
+                    }}
+                    onKeyDown={(event: any) => {
+                        if (event.key !== 'Enter') {
+                            return;
+                        }
+                        onRunQuery();
+                        processVariableInput(event.target.value, query, 'logsParamVariable', setLogsParamVariable, setError, onChange, onRunQuery);
+                    }}
+                    onBlur={(event: any) => {
+                        processVariableInput(event.target.value, query, 'logsParamVariable', setLogsParamVariable, setError, onChange, onRunQuery);
+                    }}
                     required
                     type="text"
                     width={40}

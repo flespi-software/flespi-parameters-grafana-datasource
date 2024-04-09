@@ -6,7 +6,7 @@ import { FlespiSDK } from "flespi-sdk";
 import { defaults } from "lodash";
 import React, { ReactElement, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
-import { getTemplateSrv } from "@grafana/runtime";
+import { processVariableInput } from "utils";
 
 
 export function ContainerParameter(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
@@ -52,57 +52,6 @@ export function ContainerParameter(props: QueryEditorProps<DataSource, MyQuery, 
             .map((parameter: string) => ({ value: parameter, label: parameter }));
     };
 
-    // handle changes in selected parameter 
-    const onChangeParametersSelect = (option: any) => {
-        // update form state
-        setContParamsSelected(option);
-        // save new parameter to query
-        onChange({ ...query, contParamsSelected: option.map((param: SelectableValue<string>) => { return param.value!; }) });
-        // execute the query
-        onRunQuery();
-    };
-
-    const onParameterInputChange = (event: any) => {
-        // save updated variable to query
-        setContParamVariable(event.target.value);
-        onChange({ ...query, contParamVariable: event.target.value });
-      }
-    
-    const onParameterInputKeyDown = (event: any) => {
-        if (event.key !== 'Enter') {
-            return;
-        }
-        onRunQuery();
-        processVariableInput(event.target.value);
-    }
-    
-    const onParameterInputBlur = (event: any) => {
-        processVariableInput(event.target.value);
-    }
-
-    const processVariableInput = (inputValue: string) => {
-        // variable input field is empty
-        if (inputValue === '') {
-            // nothing to do, just remove error message, if any
-            setError("");
-            return;
-        }
-        // check user input, if this is a valid dashboard variable
-        const interpolations: any[] = [];
-        getTemplateSrv().replace(inputValue, undefined, undefined, interpolations);
-        if (interpolations[0] && interpolations[0].found === true) {
-            // matching dashboard variable is found
-            setContParamVariable(inputValue);
-            setError("");
-            // set new variable to the query and run query() to render the graph
-            onChange({ ...query, contParamVariable: inputValue });
-            onRunQuery();
-        } else {
-            // no matching dashboard variable has been found, display error message
-            setError(`Invalid variable: no variable ${inputValue} is defined for the dashboard`);
-        }
-    }
-
     /////////////////////////////////////////////////////////////////////////////////
     // render these controls only for query type QUERY_TYPE_CONTAINERS
     /////////////////////////////////////////////////////////////////////////////////
@@ -137,7 +86,11 @@ export function ContainerParameter(props: QueryEditorProps<DataSource, MyQuery, 
                     loadOptions={loadFlespiContainerParameters}
                     defaultOptions
                     cacheOptions
-                    onChange={onChangeParametersSelect}
+                    onChange={(option: any) => {
+                        setContParamsSelected(option);
+                        onChange({ ...query, contParamsSelected: option.map((param: SelectableValue<string>) => { return param.value!; }) });
+                        onRunQuery();
+                    }}
                     width={40}
                     noOptionsMessage="Container parameters not found"
                     allowCustomValue={true}
@@ -148,9 +101,20 @@ export function ContainerParameter(props: QueryEditorProps<DataSource, MyQuery, 
                 <Input
                     name="parameter"
                     value={contParamVariable}
-                    onChange={onParameterInputChange}
-                    onKeyDown={onParameterInputKeyDown}
-                    onBlur={onParameterInputBlur}
+                    onChange={(event: any) => {
+                        setContParamVariable(event.target.value);
+                        onChange({ ...query, contParamVariable: event.target.value });
+                    }}
+                    onKeyDown={(event: any) => {
+                        if (event.key !== 'Enter') {
+                            return;
+                        }
+                        onRunQuery();
+                        processVariableInput(event.target.value, query, 'contParamVariable', setContParamVariable, setError, onChange, onRunQuery);
+                    }}
+                    onBlur={(event: any) => {
+                        processVariableInput(event.target.value, query, 'contParamVariable', setContParamVariable, setError, onChange, onRunQuery);
+                    }}
                     required
                     type="text"
                     width={40}

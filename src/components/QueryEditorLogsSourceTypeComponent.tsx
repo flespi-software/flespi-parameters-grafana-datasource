@@ -11,16 +11,6 @@ export function LogsSourceType(props: QueryEditorProps<DataSource, MyQuery, MyDa
     const { onChange, query } = props;  
     const defaultedQuery = defaults(query, defaultQuery);
     const [ logsSourceType, setLogsSourceType ] = useState<string>(defaultedQuery.logsSourceType);
-
-    /////////////////////////////////////////////////////////////////////////////////
-    // user changed query type switch (radio buttons group)
-    /////////////////////////////////////////////////////////////////////////////////
-    const onLogsSourceTypeChange = (event: any) => {
-        // update component state
-        setLogsSourceType(event);
-        // update query
-        onChange({ ...query, logsSourceType: event });
-    }
     
     /////////////////////////////////////////////////////////////////////////////////
     // render these controls only for query type QUERY_TYPE_LOGS
@@ -38,7 +28,10 @@ export function LogsSourceType(props: QueryEditorProps<DataSource, MyQuery, MyDa
             <RadioButtonGroup 
                 options={LOGS_SOURCE_OPTIONS}
                 value={logsSourceType} 
-                onChange={onLogsSourceTypeChange} />
+                onChange={(event: any) => {
+                    setLogsSourceType(event);
+                    onChange({ ...query, logsSourceType: event }); 
+                }} />
           </InlineField>
         </div>
       );

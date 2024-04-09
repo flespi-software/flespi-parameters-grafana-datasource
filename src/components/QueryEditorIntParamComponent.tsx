@@ -24,7 +24,6 @@ export function IntervalParameter(props: QueryEditorProps<DataSource, MyQuery, M
     const devicesSelected = query.calcDevicesSelected;
     const calcSelected = query.calculatorSelected.value ? query.calculatorSelected.value : 0;
     const deviceSelected = devicesSelected[0].value ? devicesSelected[0].value : 0;
-    console.log(devicesSelected);
     const devices = devicesSelected.map((device: SelectableValue<number>) => device.value).join();
 
     // load statistics parameters for the accounts selected in Accounts drop down
@@ -40,17 +39,7 @@ export function IntervalParameter(props: QueryEditorProps<DataSource, MyQuery, M
             .filter((parameter: string) => parameter.toLowerCase().includes(inputValue));
         });
 
-        return intParameters.map((parameter: string) => ({ value: parameter, label: parameter }));
-    };
-
-    // handle changes in selected parameter 
-    const onChangeParametersSelect = (option: any) => {
-        // update form state
-        setIntParamsSelected(option);
-        // save new parameter to query
-        onChange({ ...query, intParamsSelected: option.map((param: SelectableValue<string>) => { return param.value!; }) });
-        // execute the query
-        onRunQuery();
+        return intParameters.map((parameter: string) => ({value: parameter, label: parameter}));
     };
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -75,7 +64,11 @@ export function IntervalParameter(props: QueryEditorProps<DataSource, MyQuery, M
                     loadOptions={loadFlespiIntervalParameters}
                     defaultOptions
                     cacheOptions
-                    onChange={onChangeParametersSelect}
+                    onChange={(option: any) => {
+                        setIntParamsSelected(option);
+                        onChange({ ...query, intParamsSelected: option.map((param: SelectableValue<string>) => (param.value!)) });
+                        onRunQuery();
+                    }}
                     width={40}
                     noOptionsMessage="Telemetry not found"
                     allowCustomValue={true}

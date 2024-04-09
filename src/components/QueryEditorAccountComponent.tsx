@@ -1,12 +1,11 @@
 import { QueryEditorProps, SelectableValue } from "@grafana/data";
-import { getTemplateSrv } from "@grafana/runtime";
 import { InlineField, InlineLabel, Input, MultiSelect, Switch } from "@grafana/ui";
 import { QUERY_TYPE_STATISTICS } from "../constants";
 import { DataSource } from "datasource";
 import { FlespiSDK } from "flespi-sdk";
 import React, { ReactElement, useEffect, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
-
+import { processVariableInput } from "utils";
 
 export function Account(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource, query } = props;  
@@ -16,8 +15,10 @@ export function Account(props: QueryEditorProps<DataSource, MyQuery, MyDataSourc
     const [ accountsSelected, setAccountSelected ] = useState<Array<SelectableValue<number>>>(query.accountsSelected);
     const [ error, setError ] = useState<string>("");
 
+    /////////////////////////////////////////////////////////////////////////////////
+    // load account and all available subaccounts for future use as select options
+    /////////////////////////////////////////////////////////////////////////////////
     useEffect(() => {
-        // load accounts and store them into state for the later use in accounts drop-down
         const fetchAccounts = async () => {
             const accounts = await Promise.all([
                 FlespiSDK.fetchFlespiAccount(datasource.url),
@@ -25,78 +26,11 @@ export function Account(props: QueryEditorProps<DataSource, MyQuery, MyDataSourc
             ]);
             const values = (await Promise.all(accounts))
                 .flat()
-                .map(account => {
-                    return {
-                        label: '#' + account.id + ' ' + account.name,
-                        value: account.id,
-                    }
-                });
+                .map(account => ({label: '#' + account.id + ' ' + account.name, value: account.id,}));
             setAccounts(values);
         }
         fetchAccounts().catch(console.error);
     }, [datasource, query]);
-
-    /////////////////////////////////////////////////////////////////////////////////
-    // account input event handler: text typed
-    /////////////////////////////////////////////////////////////////////////////////
-    const onAccountInputChange = (event: any) => {
-        // just update the value displayed in the input field
-        setAccountVariable(event.target.value);
-    }
-    /////////////////////////////////////////////////////////////////////////////////
-    // account input event hander: key down
-    /////////////////////////////////////////////////////////////////////////////////
-    const onAccountInputKeyDown = (event: any) => {
-        // process 'Enter' key down event only
-        if (event.key !== 'Enter') {
-          return;
-        }
-        processAccountVariableInput(event.target.value);
-    }
-    /////////////////////////////////////////////////////////////////////////////////
-    // account input hander: focus lost
-    /////////////////////////////////////////////////////////////////////////////////
-    const onAccountInputBlur = (event: any) => {
-        processAccountVariableInput(event.target.value);
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////
-    // account input hander: user types variable name into input
-    /////////////////////////////////////////////////////////////////////////////////
-    const processAccountVariableInput = (inputValue: string) => {
-        // account variable input field is empty
-        if (inputValue === '') {
-            // nothing to do, just remove error message, if any
-            setError("");
-            return;
-        }
-        // check user input, if this is a valid dashboard variable
-        const interpolations: any[] = [];
-        getTemplateSrv().replace(inputValue, undefined, undefined, interpolations);
-        if (interpolations[0] && interpolations[0].found === true) {
-            // matching dashboard variable is found
-            setAccountVariable(inputValue);
-            setError("");
-            // set new account variable to the query and run query() to render the graph
-            onChange({ ...query, accountVariable: inputValue });
-            onRunQuery();
-        } else {
-            // no matching dashboard variable has been found, display error message
-            setError(`Invalid variable: no variable ${inputValue} is defined for the dashboard`);
-        }
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////
-    // account select hander: changes selected accounts
-    /////////////////////////////////////////////////////////////////////////////////
-    const onChangeAccountsSelect = (option: Array<SelectableValue<number>>) => {
-        // update selected accounts in the form state
-        setAccountSelected(option);
-        // save new parameter to query
-        onChange({ ...query, accountsSelected: option });
-        // execute the query
-        onRunQuery();
-  };
 
     /////////////////////////////////////////////////////////////////////////////////
     // render these controls only for query type QUERY_TYPE_STATISTICS
@@ -129,7 +63,11 @@ export function Account(props: QueryEditorProps<DataSource, MyQuery, MyDataSourc
                     <MultiSelect 
                         value={accountsSelected}
                         options={accounts}
-                        onChange={onChangeAccountsSelect}
+                        onChange={(option: Array<SelectableValue<number>>) => {
+                            setAccountSelected(option);
+                            onChange({ ...query, accountsSelected: option });
+                            onRunQuery();
+                        }}
                         width={40}
                         placeholder="Select subaccount"                        
                     />
@@ -140,9 +78,19 @@ export function Account(props: QueryEditorProps<DataSource, MyQuery, MyDataSourc
                     <Input
                         name="account"
                         value={accountVariable}
-                        onChange={onAccountInputChange}
-                        onKeyDown={onAccountInputKeyDown}
-                        onBlur={onAccountInputBlur}
+                        onChange={(event: any) => {
+                            setAccountVariable(event.target.value);
+                        }}
+                        onKeyDown={(event: any) => {
+                            // process 'Enter' key down event only
+                            if (event.key !== 'Enter') {
+                                return;
+                            }
+                            processVariableInput(event.target.value, query, 'accountVariable', setAccountVariable, setError, onChange, onRunQuery);
+                        }}
+                        onBlur={(event: any) => {
+                            processVariableInput(event.target.value, query, 'accountVariable', setAccountVariable, setError, onChange, onRunQuery);
+                        }}
                         required
                         type="text"
                         width={40}
