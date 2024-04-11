@@ -48,7 +48,9 @@ export interface MyQuery extends DataQuery {
     useCalcDeviceVariable: boolean;
     calcDevicesSelected: Array<SelectableValue<number>>;
     calcDeviceVariable: string;
+    useIntParamVariable: boolean;
     intParamsSelected: string[];
+    intParamVariable: string;
 }
 
 /**

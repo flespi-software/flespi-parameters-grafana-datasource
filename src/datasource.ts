@@ -55,7 +55,9 @@ export const defaultQuery: Partial<MyQuery> = {
     useCalcDeviceVariable: false,
     calcDevicesSelected: [],
     calcDeviceVariable: '',
+    useIntParamVariable: false,
     intParamsSelected: [],
+    intParamVariable: '',
 };
 
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
@@ -138,10 +140,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                 return (await FlespiSDK.fetchFlespiDevicesAssignedToCalculator(calculatorId, this.url)).map(device => (prepareVariableOption(device.name, device.id)));               
             } else {
                 // this is variable query 'calculators.1685993.devices.5486936.parameters.*' - return intervals' parameters
-                const calculatorId = parseInt(variableQueryParsed[5], 10);
-                const deviceId = parseInt(variableQueryParsed[6], 10);
+                const calculatorId = variableQueryParsed[5];
                 // fetch and transform returned parameters to the required format [{'text': 'param.1'}, {'text':'param.2'}]
-                return (await FlespiSDK.fetchLastFlespiInterval(calculatorId, deviceId, this.url)).map((parameter: string) => ({ text: parameter }));
+                return (await FlespiSDK.fetchLastFlespiInterval(calculatorId, this.url)).map((parameter: string) => ({ text: parameter }));
             }
         }     
         // wrong variable query
@@ -166,8 +167,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
         const observableResponses: Array<Observable<DataQueryResponse>> = options.targets.map((query) => {
 
-            console.log("========== query()");
-            console.log(JSON.stringify(query));
+            // console.log("========== query()");
+            // console.log(JSON.stringify(query));
 
             // apply backward compatibility conversion, if needed
             tempBackwardCompatibilityConversion(query);

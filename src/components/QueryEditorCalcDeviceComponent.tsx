@@ -5,7 +5,7 @@ import { QUERY_TYPE_INTERVALS } from "../constants";
 import React, { ReactElement, useState } from "react";
 import { InlineLabel, InlineField, AsyncMultiSelect, Switch, Input } from "@grafana/ui";
 import { FlespiSDK, FlespiEntity } from "flespi-sdk";
-import { processVariableInput } from "utils";
+import { prepareItemsAndLabelsFromSelectedOptions, prepareItemsAndLabelsFromVariable, processVariableInput } from "utils";
 
 export function CalcDevice(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource, query } = props;
@@ -14,21 +14,20 @@ export function CalcDevice(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
     const [ calcDeviceVariable, setCalcDeviceVariable ] = useState<string>(query.calcDeviceVariable);
     const [ error, setError ] = useState<string>("");
 
-    const calculatorSelected = (query.calculatorsSelected[0] && query.calculatorsSelected[0].value) ? query.calculatorsSelected[0].value?.toString() : '';
+    // prepare list of selected calculators
+    const calcIds: string[] = (query.useCalculatorVariable === true) ? prepareItemsAndLabelsFromVariable(query.calculatorVariable, {}) : prepareItemsAndLabelsFromSelectedOptions(query.calculatorsSelected);
+    const calculators = calcIds.join();
 
     const loadCalcDevices = async (inputValue: string) => {
-        if (query.calculatorsSelected.length === 0) {
+        if (calculators === '') {
             // calculator is not yet selected, return empty array of devices
             return Promise.resolve([]);
         }
-        const calcDevicesPromises = await Promise.all(query.calculatorsSelected.map(calculator => {
+        const calcDevices = (await Promise.all(query.calculatorsSelected.map(calculator => {
             return FlespiSDK.fetchFlespiDevicesAssignedToCalculator(calculator.value ? calculator.value : 0, datasource.url)
                             .then((result: FlespiEntity[]) => (result.filter(device => (device.name.toLowerCase().includes(inputValue)))));
-        }));
-        const calcDevices = (await Promise.all(calcDevicesPromises)).flat();
-        const calcDevicesUnique = new Set(calcDevices);
-
-        return Array.from(calcDevicesUnique.values())
+            }))).flat();
+        return Array.from(new Set(calcDevices).values())
             .sort()
             .map(device => ({value: device.id, label: device.name})); 
     };
@@ -60,9 +59,9 @@ export function CalcDevice(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
                 </div>
             </InlineField>
             {!useCalcDeviceVariable ? (
-                <InlineField disabled={calculatorSelected ? false : true}>
+                <InlineField>
                     <AsyncMultiSelect
-                        key={calculatorSelected}
+                        key={calculators}
                         value={calcDevicesSelected}
                         loadOptions={loadCalcDevices}
                         onChange={(option: Array<SelectableValue<number>>) => {

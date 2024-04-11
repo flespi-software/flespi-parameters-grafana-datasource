@@ -37,35 +37,39 @@ export const prepareVariableOption = (itemName: string, itemId: number): MetricF
 }
 
 // function is used in query() method to resolve the list of selected options into the list of items' ids and fill the dictionary with items' labels
-export const prepareItemsAndLabelsFromSelectedOptions = (itemsSelected: Array<SelectableValue<number>>, itemsLabels: {[key: string]: string}) => {
+export const prepareItemsAndLabelsFromSelectedOptions = (itemsSelected: Array<SelectableValue<number>>, itemsLabels?: {[key: string]: string}): string[] => {
     return itemsSelected.map(item => {
         if (item.value === undefined) {
             throw new Error("Wrong item value. Item ID is expected.");
         }
-        itemsLabels[item.value.toString()] = item.label ? item.label : '';
+        if (itemsLabels !== undefined) {
+            itemsLabels[item.value.toString()] = item.label ? item.label : '';
+        }
         return item.value?.toString();
     });   
 }
 
 // function is used in query() method to resolve the variable into the list of items' ids and fill the dictionary with items' labels
-export const prepareItemsAndLabelsFromVariable = (variableName: string, scopedVars: ScopedVars, itemsLabels: {[key: string]: string}) => {
+export const prepareItemsAndLabelsFromVariable = (variableName: string, scopedVars: ScopedVars, itemsLabels?: {[key: string]: string}): string[] => {
     // resolve items' ids from variable
     const items = getTemplateSrv().replace(variableName, scopedVars, 'csv').split(',');
-    // find dashoard variable with given name
-    const currentVariable = getTemplateSrv().getVariables().find(variable => (`$${variable.name}` === variableName));
-    if (currentVariable !== undefined) {
-        // get variable options
-        const options: Array<ScopedVar<string>> = JSON.parse(JSON.stringify(currentVariable)).options;
-        // iterate flespi items ids and find corresponding variable's option
-        items.map(itemId => {
-            options.find(option  => {
-                const optionItemId = option.value.split(':')[0];
-                if (optionItemId === itemId) {
-                    // corresponding option is found - store its text for future use in graphs legend as a label
-                    itemsLabels[itemId.toString()] = option.text;
-                }
+    if (itemsLabels !== undefined) {
+        // find dashoard variable with given name
+        const currentVariable = getTemplateSrv().getVariables().find(variable => (`$${variable.name}` === variableName));
+        if (currentVariable !== undefined) {
+            // get variable options
+            const options: Array<ScopedVar<string>> = JSON.parse(JSON.stringify(currentVariable)).options;
+            // iterate flespi items ids and find corresponding variable's option
+            items.map(itemId => {
+                options.find(option  => {
+                    const optionItemId = option.value.split(':')[0];
+                    if (optionItemId === itemId) {
+                        // corresponding option is found - store its text for future use in graphs legend as a label
+                        itemsLabels[itemId.toString()] = option.text;
+                    }
+                });
             });
-        });
+        }
     }
     return items;
 }

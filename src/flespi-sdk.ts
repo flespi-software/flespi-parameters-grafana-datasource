@@ -311,9 +311,9 @@ export class FlespiSDK {
     }
 
     // returns JS array of parameters' names
-    static async fetchLastFlespiInterval(calcId: number, deviceId: number, url: string): Promise<string[]> {
+    static async fetchLastFlespiInterval(calcId: string, url: string): Promise<string[]> {
         const observableResponse =  getBackendSrv().fetch<FlespiAnalyticsIntervalsResponse>({
-            url: url + this.routePath + `/gw/calcs/${calcId}/devices/${deviceId}/intervals/last`,
+            url: url + this.routePath + `/gw/calcs/${calcId}/devices/all/intervals/last`,
             method: 'GET',
         });
         const response = await lastValueFrom(observableResponse);
