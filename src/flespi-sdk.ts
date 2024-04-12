@@ -317,7 +317,6 @@ export class FlespiSDK {
             method: 'GET',
         });
         const response = await lastValueFrom(observableResponse);
-        console.log(response);
         const params = response.data.result[0];
         if (params === null) {
             return Promise.resolve([]);
@@ -331,8 +330,14 @@ export class FlespiSDK {
     }
 
     // returns observable fetch response with data
-    static fetchFlespiIntervals(calcId: number, deviceId: number, url: string, from: number, to: number): Observable<FetchResponse<FlespiAnalyticsIntervalsResponse>> {
-        const requestParameters = `{"begin":${from},"end":${to}}`;
+    static fetchFlespiIntervals(calcId: string, deviceId: string, parameters: string[], url: string, from: number, to: number): Observable<FetchResponse<FlespiAnalyticsIntervalsResponse>> {
+        console.log("=== fetchFlespiIntervals() === calc::" + calcId + "::device::" + deviceId);
+        
+        let requestParameters = `{"begin":${from},"end":${to}`;
+        requestParameters += `,"fields":"`;
+        requestParameters += parameters.join(',');
+        requestParameters += `,begin,end"}`;
+
         return getBackendSrv().fetch<FlespiAnalyticsIntervalsResponse>({
             url: url + this.routePath + `/gw/calcs/${calcId}/devices/${deviceId}/intervals/all?data=${requestParameters}`,
             method: 'GET',

@@ -12,7 +12,7 @@ import { getTemplateSrv } from '@grafana/runtime';
 import { map } from 'rxjs/operators';
 import { FlespiSDK } from 'flespi-sdk';
 import { REGEX_DEVICES, REGEX_ACCOUNTS, REGEX_CONTAINERS, QUERY_TYPE_DEVICES, QUERY_TYPE_STATISTICS, QUERY_TYPE_CONTAINERS, QUERY_TYPE_INTERVALS, tempBackwardCompatibilityConversion, LOGS_SOURCE_DEVICE, VARIABLES_QUERY_STREAMS, QUERY_TYPE_LOGS, LOGS_SOURCE_STREAM, REGEX_CALCULATORS } from './constants';
-import { handleFetchDataQueryResponse, prepareItemsAndLabelsFromSelectedOptions, prepareItemsAndLabelsFromVariable, prepareVariableOption } from 'utils';
+import { handleFetchDataQueryResponse, handleFetchIntervalsResponse, prepareItemsAndLabelsFromSelectedOptions, prepareItemsAndLabelsFromVariable, prepareVariableOption } from 'utils';
 
 // default query values
 export const defaultQuery: Partial<MyQuery> = {
@@ -335,7 +335,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                     return merge(...containerObservableResponses); 
 
                 case QUERY_TYPE_INTERVALS:
-                    let calculators: string[], calcDevices: string[];//, intParameters:  string[];
+                    let calculators: string[], calcDevices: string[], intParameters:  string[];
                     let calculatorsLabels: {[key: string]: string,} = {}, calcDevicesLabels: {[key: string]: string,} = {};
                     if (query.useCalculatorVariable === true) {
                         calculators = prepareItemsAndLabelsFromVariable(query.calculatorVariable, options.scopedVars, calculatorsLabels);
@@ -347,16 +347,25 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                     } else {
                         calcDevices = prepareItemsAndLabelsFromSelectedOptions(query.calcDevicesSelected, calcDevicesLabels);
                     }
+                    if (query.useIntParamVariable === true) {
+                        intParameters = getTemplateSrv().replace(query.contParamVariable, options.scopedVars, 'csv').split(',');
+                    } else {
+                        intParameters = query.intParamsSelected;
+                    }
 
-                    console.log("query::intervals::calculators::" + calculators + "::calcdevices::" + calcDevices);
-                    console.log(calculatorsLabels);
-                    console.log(calcDevicesLabels);
-                    // const observableResponse = FlespiSDK.fetchFlespiIntervals(calcId, deviceId, this.url, from, to)
-                    // .pipe(
-                    //     map((response) => this.handleFetchIntervals(response, query.refId))
-                    // )
-                    // return observableResponse;
-                    return new Observable<DataQueryResponse>();
+                    console.log("query::intervals::calculators::" + calculators + "::calcdevices::" + calcDevices + "::params::" + intParameters);
+                    const calculatorsObservableResponses = calculators.map(calculator => {
+                        const devicesObservableResponses =  calcDevices.map(device => {
+                            const observableResponse = FlespiSDK.fetchFlespiIntervals(calculator, device, intParameters, this.url, from, to)
+                            .pipe(
+                                map((response) => handleFetchIntervalsResponse(response, intParameters, query.refId + ':' + calculator + ':' + device))
+                            )
+                            return observableResponse;
+                        });
+                        return merge(...devicesObservableResponses);
+                    });
+
+                    return merge(...calculatorsObservableResponses);
 
                 default:
                     return new Observable<DataQueryResponse>();
@@ -365,75 +374,4 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
         return merge(...observableResponses);
     }
-
-    // private handleFetchIntervals(response: FetchResponse, refId: string, labels?: string): DataQueryResponse {
-    //     console.log("==============handleFetchIntervals()");
-
-    //     // array to collect timestamps values for data frame, format:
-    //     // [ 1705074821000, 1705074831000, 1705074841000 ]
-    //     // const timeValues = [];
-    //     // const paramValues = [];
-    //     const latValues = [];
-    //     const lonValues = [];
-    //     // const param = 'namo_mileage';
-    //     const intervals = response.data.result;
-    //     const intervalsCount = intervals.length;
-    //     if (intervalsCount === 0) {
-    //         return { data: [] };
-    //     }
-    //     for (let i = 0; i < intervalsCount; i++) {
-    //         let interval: any = intervals[i];
-    //         // timeValues.push(interval.begin * 1000);
-    //         // paramValues.push(interval[param]);
-    //         // timeValues.push(interval.end * 1000);
-    //         // paramValues.push(null);
-
-
-
-    //         const encoded = interval.namo_route;
-    //         const decodedRoute = decode(encoded, 5);
-
-    //         for (let ii = 0; ii < decodedRoute.length; ii++) {
-    //             const point = decodedRoute[ii];
-    //             latValues.push(point[0]);
-    //             lonValues.push(point[1]);
-    //         }
-    //         // [
-    //         //   [38.5, -120.2],
-    //         //   [40.7, -120.95],
-    //         //   [43.252, -126.453],
-    //         // ]
-
-    //         console.log(interval);
-    //         break;
-    //     }
-
-    //     // Now create a data frame from collected values
-    //     // const frame = new MutableDataFrame({
-    //     //     refId: refId,
-    //     //     fields: [
-    //     //         { name: 'Time', type: FieldType.time, values: timeValues },
-    //     //     ],
-    //     // });
-    //     const frame = new MutableDataFrame({
-    //         refId: refId,
-    //         fields: [
-    //             { name: 'lat', type: FieldType.number, values: latValues },
-    //         ],
-    //     });
-    //     // frame.addField({
-    //     //     name: 'lat',
-    //     //     type: FieldType.number,
-    //     //     values: latValues,
-    //     //     labels: (labels !== undefined) ? {item: `[${labels}]`} : undefined,
-    //     // });
-    //     frame.addField({
-    //         name: 'lon',
-    //         type: FieldType.number,
-    //         values: lonValues,
-    //         labels: (labels !== undefined) ? {item: `[${labels}]`} : undefined,
-    //     });
-
-    //     return { data: [frame] };
-    // }
 }

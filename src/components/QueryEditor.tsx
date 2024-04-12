@@ -20,7 +20,6 @@ import { IntervalParameter } from "./QueryEditorIntParamComponent";
 
 export function QueryEditor(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource, query } = props;
-    console.log(JSON.stringify(props.query))
     if (tempBackwardCompatibilityConversion(query) === true) {
         // save chages to query, if backward compatibility was applied
         onChange(query);

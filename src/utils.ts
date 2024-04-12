@@ -130,6 +130,41 @@ export const handleFetchDataQueryResponse = (response: FetchResponse, refId: str
         valuesArrayLength++;
     }
 
+    return createDataFrame(timeValues, parametersValues, refId, labels);
+}
+
+export const handleFetchIntervalsResponse = (response: FetchResponse, parameters: string[], refId: string, labels?: string): DataQueryResponse => {
+    const result = response.data.result;
+    if (result.length === 0) {
+        return { data: [] };
+    }
+
+    // array to collect timestamps values for data frame, format:
+    // [ 1705074821000, 1705074831000, 1705074841000 ]
+    const timeValues = [];
+    const parametersValues: any = {};
+    const intervalsCount = result.length;
+    for (let i = 0; i < intervalsCount; i++) {
+        let interval: any = result[i];
+        // push interval begin and end values into time field
+        timeValues.push(interval.begin * 1000);
+        timeValues.push(interval.end * 1000);
+        for (const parameter of parameters) {
+            if (interval[parameter] !== undefined) {
+                if (parametersValues[parameter] === undefined) {
+                    parametersValues[parameter] = [];
+                }
+                const parameterValues = parametersValues[parameter];
+                parameterValues.push(interval[parameter]);
+                parameterValues.push(null);
+            }
+        }
+    }
+    console.log(parametersValues);
+    return createDataFrame(timeValues, parametersValues, refId, labels);
+}
+
+const createDataFrame = (timeValues: number[], parametersValues: {[key: string]: any}, refId: string, labels?: string): DataQueryResponse => {
     // Now create a data frame from collected values
     const frame = new MutableDataFrame({
         refId: refId,
@@ -138,27 +173,29 @@ export const handleFetchDataQueryResponse = (response: FetchResponse, refId: str
         ],
     })
     Object.keys(parametersValues).map(fieldName => {
-        let fieldType: FieldType;
-        switch (typeof parametersValues[fieldName][0]) {
-            case "number":
-                fieldType = FieldType.number;
-                break;
-            case "string":
-                fieldType = FieldType.string;
-                break;
-            case "boolean":
-                fieldType = FieldType.boolean;
-                break;
-            default:
-                fieldType = FieldType.other;
-                break;
+        if (parametersValues[fieldName].length > 0) {
+            let fieldType: FieldType;
+            switch (typeof parametersValues[fieldName][0]) {
+                case "number":
+                    fieldType = FieldType.number;
+                    break;
+                case "string":
+                    fieldType = FieldType.string;
+                    break;
+                case "boolean":
+                    fieldType = FieldType.boolean;
+                    break;
+                default:
+                    fieldType = FieldType.other;
+                    break;
+            }
+            frame.addField({
+                name: fieldName,
+                type: fieldType,
+                values: parametersValues[fieldName],
+                labels: (labels !== undefined) ? {item: `[${labels}]`} : undefined,
+            });
         }
-        frame.addField({
-            name: fieldName,
-            type: fieldType,
-            values: parametersValues[fieldName],
-            labels: (labels !== undefined) ? {item: `[${labels}]`} : undefined,
-        });
     });
 
     return { data: [frame] };
