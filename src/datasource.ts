@@ -22,14 +22,14 @@ export const defaultQuery: Partial<MyQuery> = {
     devicesSelected: [],
     deviceVariable: '',
     useTelemParamVariable: false,
-    telemParamsSelected: ['position.speed'],
+    telemParamsSelected: [],
     telemParamVariable: '',
     // queryType = statistics: query account's statistics parameters
     useAccountVariable: false,
     accountsSelected: [],
     accountVariable: '',
     useStatParamVariable: false,
-    statParamsSelected: ['*_storage'],
+    statParamsSelected: [],
     statParamVariable: '',
     // used for both queryType === QUERY_TYPE_DEVICES, queryType === QUERY_TYPE_STATISTICS and queryType === QUERY_TYPE_CONTAINERS
     generalizationFunction: "average", 
@@ -167,7 +167,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
         const observableResponses: Array<Observable<DataQueryResponse>> = options.targets.map((query) => {
 
-            // console.log(JSON.stringify(query));
+            console.log(JSON.stringify(query));
 
             // apply backward compatibility conversion, if needed
             tempBackwardCompatibilityConversion(query);

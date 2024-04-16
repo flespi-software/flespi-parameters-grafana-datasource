@@ -17,7 +17,7 @@ export function TelemetryParameter(props: QueryEditorProps<DataSource, MyQuery, 
     const [ telemParamVariable, setTelemParamVariable ] = useState<string>(query.telemParamVariable);
     const [ telemParamsSelected, setTelemParamsSelected ] = useState<Array<SelectableValue<string>>>(() => {
         if (query.telemParamsSelected) {
-            return query.statParamsSelected.map((parameter: string) => ({label: parameter, value: parameter}));
+            return query.telemParamsSelected.map((parameter: string) => ({label: parameter, value: parameter}));
         }
         return [];
     });
@@ -85,7 +85,7 @@ export function TelemetryParameter(props: QueryEditorProps<DataSource, MyQuery, 
                     cacheOptions
                     onChange={(option: any) => {
                         setTelemParamsSelected(option);
-                        onChange({ ...query, telemParamsSelected: option.map((param: SelectableValue<string>) => { return param.value!; }) });
+                        onChange({ ...query, telemParamsSelected: option.map((param: SelectableValue<string>) => (param.value)) });
                         onRunQuery();
                     }}
                     width={40}
