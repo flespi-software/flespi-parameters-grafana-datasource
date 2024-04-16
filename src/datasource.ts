@@ -106,7 +106,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             } else {
                 // this is variable query 'accounts.#account_id - account_name.statistics.*'
                 // account id is in the 3 array element of the parsed query
-                const accountId = parseInt(variableQueryParsed[3], 10);
+                const accountId = variableQueryParsed[3];
                 // all statistics parameters are the same for all accounts that's why it's enough to make just one request
                 // for the first account to get the list of statistics parameters
                 // and transform returned parameters to the required format [{'text': 'param.1'}, {'text':'param.2'}]

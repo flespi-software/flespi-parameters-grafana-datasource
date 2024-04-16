@@ -153,7 +153,7 @@ export class FlespiSDK {
     // fetch possible statistics parameters for given account by Id
     // GET platform/customer/statistics with header 'x-flespi-cid: <account_id>'
     // returns JS array of statistics parameters' names
-    static async fetchFlespiStatisticsParametersForAccount(accountId: number, url: string): Promise<string[]> {
+    static async fetchFlespiStatisticsParametersForAccount(accountId: string, url: string): Promise<string[]> {
         const observableResponse = getBackendSrv().fetch<FlespiCustomerStatisticsResponse>({
             url: url + this.routePath + '/platform/customer/statistics?data=%7B%22reverse%22%3Atrue%2C%22count%22%3A1%7D',
             method: 'GET',

@@ -6,7 +6,7 @@ import { FlespiSDK } from "flespi-sdk";
 import { defaults } from "lodash";
 import React, { ReactElement, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
-import { processVariableInput } from "utils";
+import { prepareItemsAndLabelsFromSelectedOptions, prepareItemsAndLabelsFromVariable, processVariableInput } from "utils";
 
 export function StatisticsParameter(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource } = props;
@@ -21,20 +21,22 @@ export function StatisticsParameter(props: QueryEditorProps<DataSource, MyQuery,
         return [];
     });
     const [ error, setError ] = useState<string>("");
-    const accountsSelected = query.accountsSelected;
-    const accounts = accountsSelected.map((device: SelectableValue<number>) => device.value).join();
+
+    // prepare list of calculators accounts
+    const accountsIDds: string[] = (query.useAccountVariable === true) ? prepareItemsAndLabelsFromVariable(query.accountVariable, {}) : prepareItemsAndLabelsFromSelectedOptions(query.accountsSelected);
+    const accounts = accountsIDds.join();
 
     /////////////////////////////////////////////////////////////////////////////////
     // load statistics parameters for the accounts selected in Accounts drop down
     /////////////////////////////////////////////////////////////////////////////////
     const loadFlespiStatsParameters = async (inputValue: string) => {
-        if (accountsSelected.toString() === '') {
+        if (accounts === '') {
             // account is not yet selected, return empty array of parameters
             return Promise.resolve([]);
         }
         // fetch statistics parameters
-        const statistics = await Promise.all(accountsSelected.map(account => {
-            return FlespiSDK.fetchFlespiStatisticsParametersForAccount(account.value ? account.value : 0, datasource.url).then((result: string[]) => {
+        const statistics = await Promise.all(accountsIDds.map(account => {
+            return FlespiSDK.fetchFlespiStatisticsParametersForAccount(account, datasource.url).then((result: string[]) => {
                 return result
                 // filter parameters based on user input in Parameter select field
                 .filter((parameter: string) => parameter.toLowerCase().includes(inputValue));
