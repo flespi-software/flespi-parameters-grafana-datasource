@@ -86,7 +86,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             } else {
                 // this is variable query 'devices.#device_id - device_name.parameters.*'
                 // device id is in the 3 array element of the parsed query
-                const deviceId = parseInt(variableQueryParsed[3], 10);
+                const deviceId = variableQueryParsed[3];
                 // fetch and transform returned parameters to the required format [{'text': 'param.1'}, {'text':'param.2'}]
                 return (await FlespiSDK.fetchDeviceTelemetryParameters(deviceId, this.url)).map((parameter: string) => ({ text: parameter }));
             }

@@ -6,7 +6,7 @@ import { FlespiSDK } from "flespi-sdk";
 import { defaults } from "lodash";
 import React, { ReactElement, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
-import { processVariableInput } from "utils";
+import { prepareItemsAndLabelsFromSelectedOptions, prepareItemsAndLabelsFromVariable, processVariableInput } from "utils";
 
 
 export function TelemetryParameter(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
@@ -22,20 +22,22 @@ export function TelemetryParameter(props: QueryEditorProps<DataSource, MyQuery, 
         return [];
     });
     const [ error, setError ] = useState<string>("");
-    const devicesSelected = query.devicesSelected;
-    const devices = devicesSelected.map((device: SelectableValue<number>) => device.value).join();
+
+    // prepare list of devices
+    const devicesIds: string[] = (query.useDeviceVariable === true) ? prepareItemsAndLabelsFromVariable(query.deviceVariable, {}) : prepareItemsAndLabelsFromSelectedOptions(query.devicesSelected);
+    const devices = devicesIds.join();
 
     /////////////////////////////////////////////////////////////////////////////////
     // load telemetry parameters for the devices selected in Devices drop down
     /////////////////////////////////////////////////////////////////////////////////
     const loadFlespiDevicesParameters = async (inputValue: string) => {
-        if (devicesSelected.toString() === '') {
+        if (devices === '') {
             // device is not yet selected, return empty array of parameters
             return Promise.resolve([]);
         }
         // fetch telemetry parameters for all selected devices
-        const telemetries = await Promise.all(devicesSelected.map(device => {
-            return FlespiSDK.fetchDeviceTelemetryParameters(device.value ? device.value : 0, datasource.url).then((result: string[]) => {
+        const telemetries = await Promise.all(devicesIds.map(device => {
+            return FlespiSDK.fetchDeviceTelemetryParameters(device, datasource.url).then((result: string[]) => {
                 return result
                 // filter parameters based on user input in Parameter select field
                 .filter((parameter: string) => parameter.toLowerCase().includes(inputValue));

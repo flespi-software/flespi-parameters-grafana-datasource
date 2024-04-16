@@ -22,7 +22,7 @@ export function StatisticsParameter(props: QueryEditorProps<DataSource, MyQuery,
     });
     const [ error, setError ] = useState<string>("");
 
-    // prepare list of calculators accounts
+    // prepare list of accounts
     const accountsIDds: string[] = (query.useAccountVariable === true) ? prepareItemsAndLabelsFromVariable(query.accountVariable, {}) : prepareItemsAndLabelsFromSelectedOptions(query.accountsSelected);
     const accounts = accountsIDds.join();
 

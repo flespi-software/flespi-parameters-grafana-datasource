@@ -66,7 +66,7 @@ export class FlespiSDK {
     // fetch telemetry parameters of the given device by Id
     // GET gw/devices/<device_id>/telemetry/all
     // returns JS array of telemetry parameters' names
-    static async fetchDeviceTelemetryParameters(deviceId: number, url: string): Promise<string[]> {
+    static async fetchDeviceTelemetryParameters(deviceId: string, url: string): Promise<string[]> {
         const observableResponse = getBackendSrv().fetch<FlespiDeviceTelemetryResponse>({
             url: url + this.routePath + `/gw/devices/${deviceId}/telemetry/all`,
             method: 'GET',
