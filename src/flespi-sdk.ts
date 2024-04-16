@@ -180,7 +180,8 @@ export class FlespiSDK {
     static fetchFlespiAccountsStatistics(accountId: string, parameters: string[], url: string, from: number, to: number, genFunction?: string, genInterval?: number): Observable<FetchResponse<DataQueryResponse>> {    
         // prepare request parameters
         let requestParameters = `{"from":${from},"to":${to}`;                                   // {"from":FROM,"to":TO
-        if (genFunction !== undefined && (genFunction === 'average' || genFunction === 'minimum' || genFunction === 'maximum') && genInterval !== undefined) {
+        if (genFunction !== undefined && (genFunction === 'average' || genFunction === 'minimum' || genFunction === 'maximum') 
+            && genInterval !== undefined && genInterval >= 10) {
             requestParameters += `,"generalize":${genInterval},"method":"${genFunction}"`;      // {"from":FROM,"to":TO,"generalize":GEN_INTERVAL,"method":"GEN_FUNC"
         }
         requestParameters += `,"fields":"`;         // {"from":FROM,"to":TO,"generalize":GEN_INTERVAL,"method":"GEN_FUNC","fields":"
