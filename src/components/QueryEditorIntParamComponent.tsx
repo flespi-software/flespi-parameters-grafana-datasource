@@ -31,7 +31,7 @@ export function IntervalParameter(props: QueryEditorProps<DataSource, MyQuery, M
             return Promise.resolve([]);
         }
         const intParameters = (await Promise.all(calcIds.map(calculator => {
-            return FlespiSDK.fetchLastFlespiInterval(calculator, datasource.url)
+            return FlespiSDK.fetchFlespiIntervalParameters(calculator, datasource.url)
                             .then((result: string[]) => (result.filter((parameter: string) => parameter.toLowerCase().includes(inputValue))));
             }))).flat();
         return Array.from(new Set(intParameters).values())

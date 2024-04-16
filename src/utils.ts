@@ -160,7 +160,6 @@ export const handleFetchIntervalsResponse = (response: FetchResponse, parameters
             }
         }
     }
-    console.log(parametersValues);
     return createDataFrame(timeValues, parametersValues, refId, labels);
 }
 

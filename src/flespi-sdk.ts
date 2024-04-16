@@ -1,15 +1,20 @@
 import { DataQueryResponse } from "@grafana/data";
 import { FetchResponse, getBackendSrv } from "@grafana/runtime";
 import { Observable, lastValueFrom } from "rxjs";
-// import { map } from 'rxjs/operators';
 
+// interfaces that describe data structure of flespi entities
 export interface FlespiDeviceTelemetryResponse {
     result: FlespiDeviceTelemetry[],
 }
 
 export interface FlespiDeviceTelemetry {
     id: number,
-    telemetry: any,
+    telemetry: {
+        [key: string]: {
+            ts: number,
+            value: any,
+        }
+    },
 }
 
 export interface FlespiCustomerStatisticsResponse {
@@ -32,8 +37,6 @@ export interface FlespiAnalyticsInterval {
     [key: string]: any,
 }
 
-// interfaces are used in metricFindQuery function
-// for 'devices.*' query - that is resolved into request /gw/devices/all
 export interface FlespiEntytiesResponse {
     result: FlespiEntity[],
 }
@@ -42,7 +45,6 @@ export interface FlespiEntity {
     id: number,
     name: string,
 }
-  
 
 export class FlespiSDK {
     static routePath = '/flespi';
@@ -296,7 +298,7 @@ export class FlespiSDK {
         return response.data.result;
     }
 
-    // fethc flespi devices assigned to calculator by Id
+    // fetch flespi devices assigned to calculator by Id
     // GET gw/devices/calcs.id=<CALC_ID>
     // returns arrau of devices assigned to the given calculator:
     // [{"id": 395457, "name": "my calcdevice1"}, {"id": 1543533, "name": "my calcdevice2"}]
@@ -310,8 +312,10 @@ export class FlespiSDK {
         return response.data.result;
     }
 
+    // fetch possible interval parameters (aka counters) of given calculator by Id
+    // GET gw/calcs/devices/intervals/last
     // returns JS array of parameters' names
-    static async fetchLastFlespiInterval(calcId: string, url: string): Promise<string[]> {
+    static async fetchFlespiIntervalParameters(calcId: string, url: string): Promise<string[]> {
         const observableResponse =  getBackendSrv().fetch<FlespiAnalyticsIntervalsResponse>({
             url: url + this.routePath + `/gw/calcs/${calcId}/devices/all/intervals/last`,
             method: 'GET',
@@ -329,10 +333,10 @@ export class FlespiSDK {
         return containerParameters;    
     }
 
+    // fetch intervals of given calculator and device by Ids
+    // GET gw/calcs/devices/intervals
     // returns observable fetch response with data
     static fetchFlespiIntervals(calcId: string, deviceId: string, parameters: string[], url: string, from: number, to: number): Observable<FetchResponse<FlespiAnalyticsIntervalsResponse>> {
-        console.log("=== fetchFlespiIntervals() === calc::" + calcId + "::device::" + deviceId);
-        
         let requestParameters = `{"begin":${from},"end":${to}`;
         requestParameters += `,"fields":"`;
         requestParameters += parameters.join(',');

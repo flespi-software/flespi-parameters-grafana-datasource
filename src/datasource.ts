@@ -142,7 +142,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                 // this is variable query 'calculators.1685993.devices.5486936.parameters.*' - return intervals' parameters
                 const calculatorId = variableQueryParsed[5];
                 // fetch and transform returned parameters to the required format [{'text': 'param.1'}, {'text':'param.2'}]
-                return (await FlespiSDK.fetchLastFlespiInterval(calculatorId, this.url)).map((parameter: string) => ({ text: parameter }));
+                return (await FlespiSDK.fetchFlespiIntervalParameters(calculatorId, this.url)).map((parameter: string) => ({ text: parameter }));
             }
         }     
         // wrong variable query
@@ -167,7 +167,6 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
         const observableResponses: Array<Observable<DataQueryResponse>> = options.targets.map((query) => {
 
-            // console.log("========== query()");
             // console.log(JSON.stringify(query));
 
             // apply backward compatibility conversion, if needed
@@ -348,7 +347,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                         calcDevices = prepareItemsAndLabelsFromSelectedOptions(query.calcDevicesSelected, calcDevicesLabels);
                     }
                     if (query.useIntParamVariable === true) {
-                        intParameters = getTemplateSrv().replace(query.contParamVariable, options.scopedVars, 'csv').split(',');
+                        intParameters = getTemplateSrv().replace(query.intParamVariable, options.scopedVars, 'csv').split(',');
                     } else {
                         intParameters = query.intParamsSelected;
                     }
