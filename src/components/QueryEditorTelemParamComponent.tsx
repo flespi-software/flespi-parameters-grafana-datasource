@@ -91,7 +91,7 @@ export function TelemetryParameter(props: QueryEditorProps<DataSource, MyQuery, 
                         onRunQuery();
                     }}
                     width={40}
-                    noOptionsMessage="Telemetry not found"
+                    noOptionsMessage={`Telemetry not found for devices' IDs: ${devices}`}
                     allowCustomValue={true}
                 />
             </InlineField>

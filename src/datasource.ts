@@ -207,6 +207,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                     } else {
                         telemParameters = query.telemParamsSelected;
                     }
+                    if (devices.length === 0 || telemParameters.length === 0) {
+                        return new Observable<DataQueryResponse>();
+                    }
                     console.log("query::devices::" + devices + "::parameters::" + telemParameters + "::");
                     // fetch device messages and transform it to data frame
                     const deviceObservableResponses = devices.map(device => {
@@ -235,6 +238,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                         statParameters = getTemplateSrv().replace(query.statParamVariable, options.scopedVars, 'csv').split(',');
                     } else {
                         statParameters = query.statParamsSelected;
+                    }
+                    if (accounts.length === 0 || statParameters.length === 0) {
+                        return new Observable<DataQueryResponse>();
                     }
 
                     console.log("query::statistics::accounts::" + accounts + "::parameters::" + statParameters + "::");
@@ -272,6 +278,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                                 // use ids of selected streams, that are stored in query.logsSourcesSelected field
                                 devices = prepareItemsAndLabelsFromSelectedOptions(query.logsSourcesSelected, devicesLabels);
                             }
+                            if (devices.length === 0 || logParameters.length === 0) {
+                                return new Observable<DataQueryResponse>();
+                            }
                             console.log("query::logs::devices::" + devices + "::parameters::" + logParameters + "::");
                             // fetch device's logs and transform it to data frame
                             const deviceObservableResponses = devices.map(device => {
@@ -291,6 +300,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                             } else {
                                 // use ids of selected streams, that are stored in query.logsSourcesSelected field
                                 streams = prepareItemsAndLabelsFromSelectedOptions(query.logsSourcesSelected, streamsLabels);
+                            }
+                            if (streams.length === 0 || logParameters.length === 0) {
+                                return new Observable<DataQueryResponse>();
                             }
                             console.log("query::logs::streams::" + streams + "::parameters::" + logParameters + "::");
                             // fetch stream's logs and transform it to data frame
@@ -322,6 +334,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                     } else {
                         contParameters = query.contParamsSelected;
                     }
+                    if (containers.length === 0 || contParameters.length === 0) {
+                        return new Observable<DataQueryResponse>();
+                    }
                     console.log("query::containers::" + containers + "::parameters::" + contParameters + "::");
                     // fetch container messages and transform it to data frame
                     const containerObservableResponses = containers.map(container => {
@@ -350,6 +365,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                         intParameters = getTemplateSrv().replace(query.intParamVariable, options.scopedVars, 'csv').split(',');
                     } else {
                         intParameters = query.intParamsSelected;
+                    }
+                    if (calculators.length === 0 || calcDevices.length === 0 || intParameters.length === 0) {
+                        return new Observable<DataQueryResponse>();
                     }
 
                     console.log("query::intervals::calculators::" + calculators + "::calcdevices::" + calcDevices + "::params::" + intParameters);

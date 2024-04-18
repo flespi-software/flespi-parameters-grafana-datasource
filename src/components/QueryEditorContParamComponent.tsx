@@ -87,7 +87,7 @@ export function ContainerParameter(props: QueryEditorProps<DataSource, MyQuery, 
                         onRunQuery();
                     }}
                     width={40}
-                    noOptionsMessage="Container parameters not found"
+                    noOptionsMessage={`Container parameters not found for containers' IDs: ${containers}`}
                     allowCustomValue={true}
                 />
             </InlineField>

@@ -91,7 +91,7 @@ export function StatisticsParameter(props: QueryEditorProps<DataSource, MyQuery,
                         onRunQuery();
                     }}
                     width={40}
-                    noOptionsMessage="Telemetry not found"
+                    noOptionsMessage={`Satistics not found for account IDs ${accounts}`}
                     allowCustomValue={true}
                 />
             </InlineField>

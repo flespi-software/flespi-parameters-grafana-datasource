@@ -79,7 +79,7 @@ export function IntervalParameter(props: QueryEditorProps<DataSource, MyQuery, M
                             onRunQuery();
                         }}
                         width={40}
-                        noOptionsMessage="Telemetry not found"
+                        noOptionsMessage={`Intervals not found for calculators' IDs: ${calculators}`}
                         allowCustomValue={true}
                         placeholder=''
                     />
