@@ -5,7 +5,7 @@ import { QUERY_TYPE_CONTAINERS } from "../constants";
 import { DataSource } from "datasource";
 import { FlespiSDK } from "flespi-sdk";
 import { MyDataSourceOptions, MyQuery } from "types";
-import { processVariableInput } from "utils";
+import { prepareSelectOption, processVariableInput } from "utils";
 
 export function Container(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource, query } = props;
@@ -21,7 +21,7 @@ export function Container(props: QueryEditorProps<DataSource, MyQuery, MyDataSou
     useEffect(() => {
         // load containers and store them into state for the later use in drop-down
         const fetchContainers = async () => {
-          const values = (await FlespiSDK.fetchAllFlespiContainers(datasource.url)).map(container => ({label: container.name, value: container.id}));
+          const values = (await FlespiSDK.fetchAllFlespiContainers(datasource.url)).map(container => (prepareSelectOption(container.name, container.id)));
           setContainers(values);
         }
         fetchContainers().catch(console.error);

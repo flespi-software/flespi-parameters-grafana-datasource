@@ -5,7 +5,7 @@ import { DataSource } from "datasource";
 import { FlespiSDK } from "flespi-sdk";
 import React, { ReactElement, useEffect, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
-import { processVariableInput } from "utils";
+import { prepareSelectOption, processVariableInput } from "utils";
 
 export function Device(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource, query } = props;
@@ -21,7 +21,7 @@ export function Device(props: QueryEditorProps<DataSource, MyQuery, MyDataSource
     useEffect(() => {
         // load devices and store them into state for the later use in devices drop-down
         const fetchDevices = async () => {
-            const values = (await FlespiSDK.fetchAllFlespiDevices(datasource.url)).map(device => ({label: device.name, value: device.id}));
+            const values = (await FlespiSDK.fetchAllFlespiDevices(datasource.url)).map(device => (prepareSelectOption(device.name, device.id)));
             setDevices(values);
         }
         fetchDevices().catch(console.error);

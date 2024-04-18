@@ -91,7 +91,7 @@ export function StatisticsParameter(props: QueryEditorProps<DataSource, MyQuery,
                         onRunQuery();
                     }}
                     width={40}
-                    noOptionsMessage={`Satistics not found for account IDs ${accounts}`}
+                    noOptionsMessage={`Satistics not found for accounts' IDs: ${accounts}`}
                     allowCustomValue={true}
                 />
             </InlineField>

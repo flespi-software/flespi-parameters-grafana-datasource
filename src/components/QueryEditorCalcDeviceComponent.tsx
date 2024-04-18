@@ -5,7 +5,7 @@ import { QUERY_TYPE_INTERVALS } from "../constants";
 import React, { ReactElement, useState } from "react";
 import { InlineLabel, InlineField, AsyncMultiSelect, Switch, Input } from "@grafana/ui";
 import { FlespiSDK, FlespiEntity } from "flespi-sdk";
-import { prepareItemsAndLabelsFromSelectedOptions, prepareItemsAndLabelsFromVariable, processVariableInput } from "utils";
+import { prepareItemsAndLabelsFromSelectedOptions, prepareItemsAndLabelsFromVariable, prepareSelectOption, processVariableInput } from "utils";
 
 export function CalcDevice(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource, query } = props;
@@ -29,7 +29,7 @@ export function CalcDevice(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
             }))).flat();
         return Array.from(new Set(calcDevices).values())
             .sort()
-            .map(device => ({value: device.id, label: device.name})); 
+            .map(device => (prepareSelectOption(device.name, device.id))); 
     };
 
     /////////////////////////////////////////////////////////////////////////////////

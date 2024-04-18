@@ -5,7 +5,7 @@ import { DataSource } from "datasource";
 import { FlespiSDK } from "flespi-sdk";
 import React, { ReactElement, useEffect, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
-import { processVariableInput } from "utils";
+import { prepareSelectOption, processVariableInput } from "utils";
 
 export function Account(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource, query } = props;  
@@ -26,7 +26,7 @@ export function Account(props: QueryEditorProps<DataSource, MyQuery, MyDataSourc
             ]);
             const values = (await Promise.all(accounts))
                 .flat()
-                .map(account => ({label: '#' + account.id + ' ' + account.name, value: account.id,}));
+                .map(account => (prepareSelectOption(account.name, account.id)));
             setAccounts(values);
         }
         fetchAccounts().catch(console.error);

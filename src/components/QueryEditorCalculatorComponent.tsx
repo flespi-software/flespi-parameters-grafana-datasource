@@ -5,7 +5,7 @@ import { MyDataSourceOptions, MyQuery } from "types";
 import { InlineLabel, InlineField, Switch, Input, MultiSelect } from "@grafana/ui";
 import { QUERY_TYPE_INTERVALS } from "../constants";
 import { FlespiSDK } from "flespi-sdk";
-import { processVariableInput } from "utils";
+import { prepareSelectOption, processVariableInput } from "utils";
 
 export function Calculator(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource, query } = props;
@@ -20,7 +20,7 @@ export function Calculator(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
     /////////////////////////////////////////////////////////////////////////////////
     useEffect(() => {
         const fetchCalculators = async () => {
-          const values = (await FlespiSDK.fetchAllFlespiCalculators(datasource.url)).map(calculator => ({label: calculator.name, value: calculator.id}));
+          const values = (await FlespiSDK.fetchAllFlespiCalculators(datasource.url)).map(calculator => (prepareSelectOption(calculator.name, calculator.id)));
           setCalculators(values);
         }
         fetchCalculators().catch(console.error);

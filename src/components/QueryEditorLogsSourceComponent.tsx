@@ -5,7 +5,7 @@ import { DataSource } from "datasource";
 import React, { ReactElement, useEffect, useState } from "react";
 import { MyDataSourceOptions, MyQuery } from "types";
 import { FlespiSDK } from "flespi-sdk";
-import { processVariableInput } from "utils";
+import { prepareSelectOption, processVariableInput } from "utils";
 
 export function LogsSource(props: QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>): ReactElement {
     const { onChange, onRunQuery, datasource, query } = props;
@@ -22,10 +22,10 @@ export function LogsSource(props: QueryEditorProps<DataSource, MyQuery, MyDataSo
         const fetchLogsSources = async () => {
             let values
             if (query.logsSourceType === LOGS_SOURCE_DEVICE) {
-                values = (await FlespiSDK.fetchAllFlespiDevices(datasource.url)).map(device => ({label: device.name, value: device.id}));
+                values = (await FlespiSDK.fetchAllFlespiDevices(datasource.url)).map(device => (prepareSelectOption(device.name, device.id)));
             } else {
                 // query.logsSourceType === LOGS_SOURCE_STREAM
-                values = (await FlespiSDK.fetchAllFlespiStreams(datasource.url)).map(stream => ({label: stream.name, value: stream.id}));
+                values = (await FlespiSDK.fetchAllFlespiStreams(datasource.url)).map(stream => (prepareSelectOption(stream.name, stream.id)));
             }
             setLogsSources(values);
         }

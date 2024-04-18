@@ -32,8 +32,14 @@ export const processVariableInput = (inputValue: string,
 
 // function is used in metricFindQuery() method to generate common variable option json
 export const prepareVariableOption = (itemName: string, itemId: number): MetricFindValue => {
-    const name = itemName !== '' ? itemName.replace(/\./g,'_') : '<noname>';
+    const name = (itemName !== '') ? itemName.replace(/\./g,'_') : '<noname>';
     return {text: `#${itemId} - ${name}`, value: itemId};
+}
+
+// function is used in Select loadOption method to generate common select option json
+export const prepareSelectOption = (itemName: string, itemId: number): SelectableValue => {
+    const name = (itemName !== '') ? itemName.replace(/\./g,'_') : '<noname>';
+    return {label: `#${itemId} - ${name}`, value: itemId};
 }
 
 // function is used in query() method to resolve the list of selected options into the list of items' ids and fill the dictionary with items' labels
