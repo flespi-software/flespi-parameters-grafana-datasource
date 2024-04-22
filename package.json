@@ -1,6 +1,6 @@
 {
   "name": "flespi-parameters",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "Vizualize your flespi items' parameters",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
