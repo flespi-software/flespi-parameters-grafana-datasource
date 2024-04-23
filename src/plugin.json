@@ -15,8 +15,14 @@
       "small": "img/logo.svg",
       "large": "img/logo.svg"
     },
-    "links": [],
-    "screenshots": [],
+    "links": [
+      {"name": "Project site", "url": "https://github.com/flespi-software/flespi-parameters-grafana-datasource"},
+      {"name": "MIT License", "url": "https://github.com/flespi-software/flespi-parameters-grafana-datasource/blob/main/LICENSE"}
+    ],
+    "screenshots": [
+      {"name": "Showcase", "path": "img/screenshot-showcase.png"},
+      {"name": "Query builder", "path": "img/screenshot-query-builder.png"}
+    ],
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
