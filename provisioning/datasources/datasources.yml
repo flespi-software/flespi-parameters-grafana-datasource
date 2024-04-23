@@ -1,0 +1,15 @@
+apiVersion: 1
+
+datasources:
+  - name: 'flespi-parameters'
+    type: 'flespi-parameters-datasource'
+    access: proxy
+    isDefault: false
+    orgId: 1
+    version: 1
+    editable: true
+    jsonData:
+      path: '/resources'
+    secureJsonData:
+      apiKey: 'api-key'
+  

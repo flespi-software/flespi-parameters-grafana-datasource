@@ -1,0 +1,430 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_FLESPI-PARAMETERS",
+      "label": "flespi-parameters",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "flespi-parameters-datasource",
+      "pluginName": "Flespi Parameters Datasource"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "datasource",
+      "id": "flespi-parameters-datasource",
+      "name": "Flespi Parameters Datasource",
+      "version": "1.4.5"
+    },
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "10.4.1"
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "flespi-parameters",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 100,
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "position.speed [🚴🚴🚴namo smartphone 🚴🚴🚴]"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "custom.axisSoftMax",
+                "value": 35
+              },
+              {
+                "id": "unit",
+                "value": "velocitykmh"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "position.speed [🏃‍♀️🏃‍♀️🏃‍♀️ namo smartphone 🏃‍♀️🏃‍♀️🏃‍♀️]"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "custom.axisSoftMax",
+                "value": 35
+              },
+              {
+                "id": "unit",
+                "value": "velocitykmh"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "accountVariable": "",
+          "accountsSelected": [],
+          "calcDeviceVariable": "",
+          "calcDevicesSelected": [],
+          "calculatorVariable": "",
+          "calculatorsSelected": [],
+          "contParamVariable": "",
+          "contParamsSelected": [],
+          "containerVariable": "",
+          "containersSelected": [],
+          "datasource": "flespi-parameters",
+          "deviceVariable": "",
+          "devicesSelected": [
+            {
+              "label": "🚴🚴🚴namo smartphone 🚴🚴🚴",
+              "value": 5486936
+            },
+            {
+              "label": "🏃‍♀️🏃‍♀️🏃‍♀️ namo smartphone 🏃‍♀️🏃‍♀️🏃‍♀️",
+              "value": 5193094
+            }
+          ],
+          "generalizationFunction": "average",
+          "intParamVariable": "",
+          "intParamsSelected": [],
+          "logsParamVariable": "",
+          "logsParamsSelected": [],
+          "logsSourceType": "device",
+          "logsSourceVariable": "",
+          "logsSourcesSelected": [],
+          "queryType": "devices",
+          "refId": "A",
+          "statParamVariable": "",
+          "statParamsSelected": [
+            "*_storage"
+          ],
+          "telemParamVariable": "",
+          "telemParamsSelected": [
+            "battery.level",
+            "position.speed"
+          ],
+          "useAccountVariable": false,
+          "useCalcDeviceVariable": false,
+          "useCalculatorVariable": false,
+          "useContParamVariable": false,
+          "useContainerVariable": false,
+          "useDeviceVariable": false,
+          "useIntParamVariable": false,
+          "useLogsParamVariable": false,
+          "useLogsSourceVariable": false,
+          "useStatParamVariable": false,
+          "useTelemParamVariable": false
+        }
+      ],
+      "title": "namo smartphone: speed and battery level",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "flespi-parameters",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 100,
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "lengthm"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "position.speed [🚴🚴🚴namo smartphone 🚴🚴🚴]"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "custom.axisSoftMax",
+                "value": 35
+              },
+              {
+                "id": "unit",
+                "value": "velocitykmh"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "position.speed [🏃‍♀️🏃‍♀️🏃‍♀️ namo smartphone 🏃‍♀️🏃‍♀️🏃‍♀️]"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "custom.axisSoftMax",
+                "value": 35
+              },
+              {
+                "id": "unit",
+                "value": "velocitykmh"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "accountVariable": "",
+          "accountsSelected": [],
+          "calcDeviceVariable": "",
+          "calcDevicesSelected": [],
+          "calculatorVariable": "",
+          "calculatorsSelected": [],
+          "contParamVariable": "",
+          "contParamsSelected": [],
+          "containerVariable": "",
+          "containersSelected": [],
+          "datasource": "flespi-parameters",
+          "deviceVariable": "",
+          "devicesSelected": [
+            {
+              "label": "🚴🚴🚴namo smartphone 🚴🚴🚴",
+              "value": 5486936
+            },
+            {
+              "label": "🏃‍♀️🏃‍♀️🏃‍♀️ namo smartphone 🏃‍♀️🏃‍♀️🏃‍♀️",
+              "value": 5193094
+            }
+          ],
+          "generalizationFunction": "average",
+          "intParamVariable": "",
+          "intParamsSelected": [],
+          "logsParamVariable": "",
+          "logsParamsSelected": [],
+          "logsSourceType": "device",
+          "logsSourceVariable": "",
+          "logsSourcesSelected": [],
+          "queryType": "devices",
+          "refId": "A",
+          "statParamVariable": "",
+          "statParamsSelected": [
+            "*_storage"
+          ],
+          "telemParamVariable": "",
+          "telemParamsSelected": [
+            "position.speed",
+            "position.altitude"
+          ],
+          "useAccountVariable": false,
+          "useCalcDeviceVariable": false,
+          "useCalculatorVariable": false,
+          "useContParamVariable": false,
+          "useContainerVariable": false,
+          "useDeviceVariable": false,
+          "useIntParamVariable": false,
+          "useLogsParamVariable": false,
+          "useLogsSourceVariable": false,
+          "useStatParamVariable": false,
+          "useTelemParamVariable": false
+        }
+      ],
+      "title": "namo smartphone: speed and altitude",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": [
+    "DEMO"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "namo demo dashboard #1: device",
+  "uid": "adiwfzy9h7vggb",
+  "version": 14,
+  "weekStart": ""
+}
