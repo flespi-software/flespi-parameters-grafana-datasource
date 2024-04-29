@@ -15,9 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: build release
-        uses: grafana/plugin-actions/build-plugin@main
-        id: build_release 
+      - uses: grafana/plugin-actions/build-plugin@main
         #with:
           # see https://grafana.com/developers/plugin-tools/publish-a-plugin/sign-a-plugin#generate-an-access-policy-token to generate it
           # save the value in your repository secrets
@@ -25,16 +23,8 @@ jobs:
 
       - run: mv flespi-parameters-datasource-*.zip flespi-parameters-datasource.zip
 
-      - run: echo ${{ steps.build_release.outputs.upload_url }}
-
-      # - uses: softprops/action-gh-release@v2
-      #   with:
-      #     files: flespi-parameters-datasource.zip
-      
-      - uses: actions/upload-release-asset@v1
+      - uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ steps.build_release.outputs.upload_url }}
-          asset_path: ./flespi-parameters-datasource.zip
-          asset_name: flespi-parameters-datasource.zip
-          asset_content_type: application/zip
-
+          draft: true
+          files: flespi-parameters-datasource.zip
+      
