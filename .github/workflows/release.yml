@@ -21,10 +21,10 @@ jobs:
           # save the value in your repository secrets
           #policy_token: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
 
-      - run: mv "flespi-parameters-datasource-*.zip" "flespi-parameters-datesource.zip"
+      - run: mv flespi-parameters-datasource-*.zip flespi-parameters-datasource.zip
       
       - uses: actions/upload-release-asset@v1
         with:
-          asset_name: flespi-parameters-datesource.zip
+          asset_name: flespi-parameters-datasource.zip
           asset_content_type: application/zip
 
