@@ -42,7 +42,7 @@ ________________________________________________
 
     mkdir  -p ./data/plugins
 
-    ./bin/grafana cli --pluginsDir ./data/plugins --pluginUrl https://github.com/flespi-software/flespi-parameters-grafana-datasource/archive/master.zip plugins install flespi-parameters-datasource
+    ./bin/grafana cli --pluginsDir ./data/plugins --pluginUrl https://github.com/flespi-software/flespi-parameters-grafana-datasource/releases/latest/download/flespi-parameters-datasource.zip plugins install flespi-parameters-datasource
     ```
     As soon as _flespi-parameters-datasource_ plugin is not signed, in order to be able to install and run the plugin, you should specify plugin's id in [allow_loading_unsigned_plugins](https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#allow_loading_unsigned_plugins) Grafana configuration variable.
 
@@ -86,11 +86,11 @@ ________________________________________________
   To install this plugin using the [grafana cli](https://grafana.com/docs/grafana/latest/cli/) tool, execute the following command:
   ```
   cd /usr/share/grafana/bin
-  sudo ./grafana cli --pluginUrl https://github.com/flespi-software/flespi-parameters-grafana-datasource/archive/master.zip plugins install flespi-parameters-datasource
+  sudo ./grafana cli --pluginUrl https://github.com/flespi-software/flespi-parameters-grafana-datasource/releases/latest/download/flespi-parameters-datasource.zip plugins install flespi-parameters-datasource
   ```
   and then restart your grafana server.
 
-  Alternatively, you may manually copy `flespi-parameters-datasource` directory into grafana plugins directory and restart grafana server.
+  Alternatively, you may manually copy source code from `flespi-parameters-datasource` directory into grafana plugins directory and restart grafana server.
   By default plugins directory is: `/var/lib/grafana/plugins`
   To check plugins directory in Grafana interface open: Toggle menu in top left corner > Administration > Settings > paths/plugins
 
@@ -143,3 +143,12 @@ To build and watch the plugin frontend code:
 
 1.2.0 
   Added visualization of flespi containers' parameters
+
+1.3.0
+  Added visualization of logs of flespi devices and streams
+
+1.4.0
+  Added visualization of flespi analytics's intervals
+
+1.4.8
+  Changed build release workflow. Readme updated accordingly
