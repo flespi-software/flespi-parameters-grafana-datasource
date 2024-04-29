@@ -22,9 +22,15 @@ jobs:
           #policy_token: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
 
       - run: mv flespi-parameters-datasource-*.zip flespi-parameters-datasource.zip
-      
-      - uses: actions/upload-release-asset@v1
+
+      uses: softprops/action-gh-release@v2
         with:
-          asset_name: flespi-parameters-datasource.zip
-          asset_content_type: application/zip
+          files: flespi-parameters-datasource.zip
+      
+      # - uses: actions/upload-release-asset@v1
+      #   with:
+      #     upload_url: 
+      #     asset_path: ./flespi-parameters-datasource.zip
+      #     asset_name: flespi-parameters-datasource.zip
+      #     asset_content_type: application/zip
 
