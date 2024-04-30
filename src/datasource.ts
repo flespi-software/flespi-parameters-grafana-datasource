@@ -10,7 +10,7 @@ import { Observable, merge } from 'rxjs';
 import { MyQuery, MyDataSourceOptions } from './types';
 import { getTemplateSrv } from '@grafana/runtime';
 import { map } from 'rxjs/operators';
-import { FlespiSDK } from 'flespi-sdk';
+import { FlespiEntity, FlespiSDK } from 'flespi-sdk';
 import { REGEX_DEVICES, REGEX_ACCOUNTS, REGEX_CONTAINERS, QUERY_TYPE_DEVICES, QUERY_TYPE_STATISTICS, QUERY_TYPE_CONTAINERS, QUERY_TYPE_INTERVALS, tempBackwardCompatibilityConversion, LOGS_SOURCE_DEVICE, VARIABLES_QUERY_STREAMS, QUERY_TYPE_LOGS, LOGS_SOURCE_STREAM, REGEX_CALCULATORS } from './constants';
 import { handleFetchDataQueryResponse, handleFetchIntervalsResponse, prepareItemsAndLabelsFromSelectedOptions, prepareItemsAndLabelsFromVariable, prepareVariableOption } from 'utils';
 
@@ -151,14 +151,54 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     // datasource's health check
     async testDatasource() {
-        // select all flespi devices available for the configured token
-        const flespiDevices = await FlespiSDK.fetchAllFlespiDevices(this.url);
-        const flespiAccount = await FlespiSDK.fetchFlespiAccount(this.url);
-        const flespiSubaccounts = await FlespiSDK.fetchAllFlespiSubaccounts(this.url);
-        const flespiStreams = await FlespiSDK.fetchAllFlespiStreams(this.url);        
+        let flespiDevices: FlespiEntity[] = [], 
+            flespiAccount: FlespiEntity[] = [], 
+            flespiSubaccounts: FlespiEntity[] = [], 
+            flespiStreams: FlespiEntity[] = [],
+            flespiContainers: FlespiEntity[] = [],
+            flespiCalculators: FlespiEntity[] = [];
+        try {
+            flespiDevices = await FlespiSDK.fetchAllFlespiDevices(this.url);
+        } catch (error) {
+            console.log(error);
+        }
+
+        try {
+            flespiAccount = await FlespiSDK.fetchFlespiAccount(this.url);
+        } catch (error) {
+            console.log(error);
+        }
+
+        try {
+            flespiSubaccounts = await FlespiSDK.fetchAllFlespiSubaccounts(this.url);
+        } catch (error) {
+            console.log(error);
+        }
+        
+        try {
+            flespiStreams = await FlespiSDK.fetchAllFlespiStreams(this.url); 
+        } catch (error) {
+            console.log(error);
+        }        
+
+        try {
+            flespiContainers = await FlespiSDK.fetchAllFlespiContainers(this.url); 
+        } catch (error) {
+            console.log(error);
+        }    
+
+        try {
+            flespiCalculators = await FlespiSDK.fetchAllFlespiCalculators(this.url); 
+        } catch (error) {
+            console.log(error);
+        }   
+
+        let message = `Success! The configured flespi token has access to ${flespiDevices.length} devices, ${flespiStreams.length} streams, ${flespiContainers.length} containers, ${flespiCalculators.length} calculators, ${flespiSubaccounts.length} subaccounts`;
+        message += flespiAccount.length > 0 ? `, and account ID ${flespiAccount[0].id}.` : '.'; 
+        
         return {
             status: 'success',
-            message: `Success! The configured token has access to ${flespiDevices.length} flespi devices, ${flespiStreams.length} streams, account ID ${flespiAccount[0].id} and ${flespiSubaccounts.length} subaccounts.`,
+            message: message,
         };
     }
 
@@ -169,7 +209,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
             console.log(JSON.stringify(query));
 
-            // apply backward compatibility conversion, if needed
+            // apply backward compatibility conversion, if needed`
             tempBackwardCompatibilityConversion(query);
 
             // prepare time range parameters for query
