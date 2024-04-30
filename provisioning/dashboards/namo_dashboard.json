@@ -53,7 +53,7 @@
   "links": [],
   "panels": [
     {
-      "datasource": "flespi-parameters",
+      "datasource": "Flespi Parameters Datasource",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -183,7 +183,7 @@
           "contParamsSelected": [],
           "containerVariable": "",
           "containersSelected": [],
-          "datasource": "flespi-parameters",
+          "datasource": "Flespi Parameters Datasource",
           "deviceVariable": "",
           "devicesSelected": [
             {
@@ -231,7 +231,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": "flespi-parameters",
+      "datasource": "Flespi Parameters Datasource",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -361,7 +361,7 @@
           "contParamsSelected": [],
           "containerVariable": "",
           "containersSelected": [],
-          "datasource": "flespi-parameters",
+          "datasource": "Flespi Parameters Datasource",
           "deviceVariable": "",
           "devicesSelected": [
             {

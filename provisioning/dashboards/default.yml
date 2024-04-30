@@ -6,6 +6,4 @@ providers:
     type: file
     options:
       path:
-        /home/namo/work/grafana-plugins/flespi-parameters-datasource/provisioning/dashboards
-        # Default path for Windows: C:/Program Files/GrafanaLabs/grafana/public/dashboards
-        # Default path for Linux is: /var/lib/grafana/dashboards
+        ${PROVISIONING_CFG_DIR}/dashboards
