@@ -104,6 +104,31 @@ ________________________________________________
 
 ________________________________________________
 
+<details>
+  <summary>Windows installation</summary>
+
+1. Install Grafana as per [instructions here](https://grafana.com/docs/grafana/latest/setup-grafana/installation/windows/).
+
+2. As soon as _flespi-parameters-datasource_ plugin is not signed, in order to be able to install and run the plugin, you should specify plugin's id in [allow_loading_unsigned_plugins](https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#allow_loading_unsigned_plugins) Grafana configuration variable:
+
+```
+allow_loading_unsigned_plugins = flespi-parameters-datasource
+```
+
+Open `conf\custom.ini` configuration file, find variable `allow_loading_unsigned_plugins`, uncomment it and add _flespi-parameters-datasource_ to variable's value (as comma-separated list).
+If there are no `conf\custom.ini` file, then open the `conf` directory, copy `sample.ini` to `custom.ini`, and then edit it as described above.
+This will require administrative privileges.
+
+3. Open Windows Command Prompt with administrative privileges. Then navigate to `bin` directory of your Grafana installation, and execute the command below to install _flespi-parameters-datasource_ plugin:
+```
+grafana-cli --pluginUrl https://github.com/flespi-software/flespi-parameters-grafana-datasource/releases/latest/download/flespi-parameters-datasource.zip plugins install flespi-parameters-datasource
+```
+Restart Grafana and then find _flespi-parameters-datasource_ plugin among the available plugins in Grafana UI.
+
+</details>
+
+________________________________________________
+
 ### To setup the datasource you need to configure your [Flespi Token](https://flespi.com/kb/tokens-access-keys-to-flespi-platform) in datasource's settings.
 
 ### Plugin supports template variables.
@@ -137,11 +162,11 @@ To build and watch the plugin frontend code:
 
 1.0.0
   Initial implementation
-  
+
 1.1.0
   Added visualization of flespi accounts' statistics
 
-1.2.0 
+1.2.0
   Added visualization of flespi containers' parameters
 
 1.3.0
